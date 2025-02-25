@@ -233,7 +233,7 @@ const translate: ActionFunction<Options> = async (input, options) => {
   const messages: Message[] = [
     {
       role: "system",
-      content: `You are a professional translator. Please translate the user's text to ${targetLang}. Only return the translation result, don't add any explanations or comments.`
+      content: `You are a professional translator; please translate the user's text to ${targetLang}, emphasizing natural expression, clarity, accuracy, and fluency; don't add any explanations or comments.`
     },
     {
       role: "user",
