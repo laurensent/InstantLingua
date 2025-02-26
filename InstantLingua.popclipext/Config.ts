@@ -1,8 +1,8 @@
 // #popclip
-// name: InstantGrok
+// name: InstantLingua
 // icon: symbol:translate
 // description: Use multiple AI models to translate selected text
-// app: { name: Multi-AI Translator, link: 'https://docs.x.ai/docs/tutorial' }
+// app: { name: InstantLingua Translator, link: 'https://github.com/laurensent/InstantLingua' }
 // popclipVersion: 4586
 // keywords: translate, grok, claude, anthropic, gemini, xai
 // entitlements: [network]
@@ -10,6 +10,44 @@
 
 import axios from "axios";
 
+// Model configuration with labels
+const modelOptions = {
+  "grok": {
+    values: ["grok-2-1212"],
+    valueLabels: ["Grok 2"],
+    defaultModel: "grok-2-1212"
+  },
+  "anthropic": {
+    values: [
+      "claude-3-7-sonnet-20250219",
+      "claude-3-5-sonnet-20240620", 
+      "claude-3-5-haiku-20241022"
+    ],
+    valueLabels: [
+      "Claude 3.7 Sonnet",
+      "Claude 3.5 Sonnet", 
+      "Claude 3.5 Haiku"
+    ],
+    defaultModel: "claude-3-5-sonnet-20240620"
+  },
+  "gemini": {
+    values: [
+      "gemini-2.0-flash", 
+      "gemini-2.0-flash-lite",
+      "gemini-1.5-flash",
+      "gemini-1.5-pro"
+    ],
+    valueLabels: [
+      "Gemini 2.0 Flash", 
+      "Gemini 2.0 Flash-Lite",
+      "Gemini 1.5 Flash",
+      "Gemini 1.5 Pro"
+    ],
+    defaultModel: "gemini-1.5-pro"
+  }
+};
+
+// Static options configuration
 export const options = [
   {
     identifier: "provider",
@@ -18,53 +56,54 @@ export const options = [
     defaultValue: "grok",
     values: ["grok", "anthropic", "gemini"],
     valueLabels: ["Grok (xAI)", "Claude (Anthropic)", "Gemini (Google)"],
-    description: "Select which AI provider to use",
+    description: "Select which AI provider to use"
   },
   {
     identifier: "grokApiKey",
     label: "Grok API Key",
     type: "secret",
     description: "Get API Key from xAI: https://x.ai",
-    dependsOn: { provider: "grok" },
+    dependsOn: { provider: "grok" }
   },
   {
     identifier: "anthropicApiKey",
-    label: "Claude API Key",
+    label: "Anthropic API Key",
     type: "secret",
     description: "Get API Key from Anthropic: https://console.anthropic.com",
-    dependsOn: { provider: "anthropic" },
+    dependsOn: { provider: "anthropic" }
   },
   {
     identifier: "geminiApiKey",
-    label: "Gemini API Key",
+    label: "Gemini API Key", 
     type: "secret",
     description: "Get API Key from Google AI Studio: https://aistudio.google.com",
-    dependsOn: { provider: "gemini" },
+    dependsOn: { provider: "gemini" }
   },
   {
     identifier: "grokModel",
-    label: "Grok Model",
+    label: "xAI",
     type: "multiple",
-    defaultValue: "grok-2-1212",
-    values: ["grok-2-1212"],
+    defaultValue: modelOptions.grok.defaultModel,
+    values: modelOptions.grok.values,
+    valueLabels: modelOptions.grok.valueLabels,
     dependsOn: { provider: "grok" },
   },
   {
     identifier: "anthropicModel",
-    label: "Claude Model",
+    label: "Anthropic",
     type: "multiple",
-    defaultValue: "claude-3-5-sonnet-20240620",
-    values: ["claude-3-5-sonnet-20240620", "claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"],
-    valueLabels: ["Claude 3.5 Sonnet", "Claude 3 Opus", "Claude 3 Sonnet", "Claude 3 Haiku"],
+    defaultValue: modelOptions.anthropic.defaultModel,
+    values: modelOptions.anthropic.values,
+    valueLabels: modelOptions.anthropic.valueLabels,
     dependsOn: { provider: "anthropic" },
   },
   {
     identifier: "geminiModel",
-    label: "Gemini Model",
+    label: "Google AI",
     type: "multiple",
-    defaultValue: "gemini-1.5-pro",
-    values: ["gemini-1.5-pro", "gemini-1.5-flash"],
-    valueLabels: ["Gemini 1.5 Pro", "Gemini 1.5 Flash"],
+    defaultValue: modelOptions.gemini.defaultModel,
+    values: modelOptions.gemini.values,
+    valueLabels: modelOptions.gemini.valueLabels,
     dependsOn: { provider: "gemini" },
   },
   {
@@ -122,7 +161,10 @@ interface AnthropicResponseData {
 }
 
 interface GeminiResponseData {
-  candidates: [{ content: { parts: [{ text: string }] } }];
+  candidates: [{
+    content?: { parts: [{ text: string }] },
+    text?: string
+  }];
 }
 
 // API Configuration interface
@@ -132,6 +174,8 @@ interface ApiConfig {
   data: Record<string, any>;
   extractContent: (data: any) => string;
 }
+
+// No initialization required since we use static model lists
 
 // Translation main function
 const translate: ActionFunction<Options> = async (input, options) => {
@@ -153,13 +197,19 @@ const translate: ActionFunction<Options> = async (input, options) => {
 
   const targetLang = options.targetLang;
   const model = getModelForProvider(options);
+  
+  // Check if model is selected
+  if (!model) {
+    popclip.showText(`No model selected for ${provider}. Please check settings.`);
+    return;
+  }
 
   // Build request configuration based on provider
   const apiConfig = buildApiConfig(provider, apiKey, model, targetLang, text);
 
   try {
     // Show loading indication
-    popclip.showText("Translating...");
+    // popclip.showText("Translating...");
 
     // Create cancel token for request
     const CancelToken = axios.CancelToken;
@@ -212,31 +262,36 @@ const translate: ActionFunction<Options> = async (input, options) => {
   }
 };
 
+// Simple provider configuration
+interface ProviderConfig {
+  getApiKey: (options: Options) => string;
+  getModel: (options: Options) => string;
+}
+
+const providerConfigs: Record<string, ProviderConfig> = {
+  "grok": {
+    getApiKey: (options) => options.grokApiKey,
+    getModel: (options) => options.grokModel
+  },
+  "anthropic": {
+    getApiKey: (options) => options.anthropicApiKey,
+    getModel: (options) => options.anthropicModel
+  },
+  "gemini": {
+    getApiKey: (options) => options.geminiApiKey,
+    getModel: (options) => options.geminiModel
+  }
+};
+
 // Helper functions
 function getApiKey(options: Options): string {
-  switch (options.provider) {
-    case "grok":
-      return options.grokApiKey;
-    case "anthropic":
-      return options.anthropicApiKey;
-    case "gemini":
-      return options.geminiApiKey;
-    default:
-      return "";
-  }
+  const provider = options.provider;
+  return providerConfigs[provider]?.getApiKey(options) || "";
 }
 
 function getModelForProvider(options: Options): string {
-  switch (options.provider) {
-    case "grok":
-      return options.grokModel;
-    case "anthropic":
-      return options.anthropicModel;
-    case "gemini":
-      return options.geminiModel;
-    default:
-      return "";
-  }
+  const provider = options.provider;
+  return providerConfigs[provider]?.getModel(options) || "";
 }
 
 function buildApiConfig(
@@ -291,7 +346,7 @@ function buildApiConfig(
     
     case "gemini":
       return {
-        url: "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent",
+        url: `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
         headers: {
           "Content-Type": "application/json"
         },
@@ -303,13 +358,28 @@ function buildApiConfig(
               ]
             }
           ],
-          generation_config: {
+          generationConfig: {
             temperature: 0.3,
             maxOutputTokens: 4096
-          },
-          key: apiKey  // Gemini API key goes in the request body
+          }
         },
-        extractContent: (data: GeminiResponseData) => data.candidates[0].content.parts[0].text.trim()
+        extractContent: (data: GeminiResponseData) => {
+          try {
+            // Gemini can have different response formats
+            if (data.candidates && data.candidates[0]) {
+              if (data.candidates[0].content?.parts?.[0]?.text) {
+                return data.candidates[0].content.parts[0].text.trim();
+              } else if (data.candidates[0].text) {
+                return data.candidates[0].text.trim();
+              }
+            }
+            // If we can't parse the expected format, try to extract some text
+            return JSON.stringify(data).substring(0, 200) + "...";
+          } catch (err) {
+            console.error("Error extracting Gemini response:", err);
+            throw new Error("Could not extract text from Gemini response");
+          }
+        }
       };
     
     default:

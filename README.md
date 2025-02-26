@@ -1,13 +1,11 @@
-# InstantGrok
+# InstantLingua
 
-Translate the selected word or short phrase instantly within PopClip. Powered by Grok API. 
+Translate the selected word or short phrase instantly within PopClip. Powered by multiple AI providers: Grok, Claude, and Gemini.
 
-You can get API Key from xAI: https://x.ai
-
-![](/InstantGrok.png)
+![](/InstantLingua.png)
 
 ## Support Languages
-> Notice: The following languages are supported, But not specifically Grok.
+> Note: The following languages are supported by all providers.
 
 - English 
 - Chinese 
