@@ -6,6 +6,7 @@
 // popclipVersion: 4586
 // keywords: translate, grok, xai
 // entitlements: [network]
+// minOS: 14.0
 
 import axios from "axios";
 
@@ -29,26 +30,6 @@ export const options = [
     type: "multiple",
     defaultValue: "Chinese",
     values: [
-      "English", 
-      "Chinese", 
-      "Spanish", 
-      "Arabic", 
-      "French", 
-      "Russian", 
-      "Portuguese", 
-      "German", 
-      "Japanese", 
-      "Hindi", 
-      "Korean", 
-      "Italian", 
-      "Dutch", 
-      "Turkish", 
-      "Vietnamese", 
-      "Polish", 
-      "Thai", 
-      "Swedish"
-    ],
-    valueLabels: [
       "English", 
       "Chinese", 
       "Spanish", 
@@ -96,119 +77,6 @@ interface Response {
   data: ResponseData;
 }
 
-// Format text, control characters per line, support automatic line breaks and handle long words
-function formatText(text: string, maxCharsPerLine: number): string {
-  // Ensure line width is a valid positive integer, default to 25
-  const lineWidth = Number.isInteger(maxCharsPerLine) && maxCharsPerLine > 0
-    ? maxCharsPerLine
-    : 25;
-
-  console.log(`Using line width: ${lineWidth}`);
-
-  // If text length is less than or equal to line width, return original text
-  if (text.length <= lineWidth) {
-    return text;
-  }
-
-  let result = '';
-  let currentLine = '';
-
-  // Helper function: Split long words into multiple segments
-  function splitLongWord(word: string): string[] {
-    const segments: string[] = [];
-    for (let i = 0; i < word.length; i += lineWidth) {
-      segments.push(word.substring(i, i + lineWidth));
-    }
-    return segments;
-  }
-
-  // Detect if text is pure Chinese (including punctuation)
-  const chinesePattern = /^[\u4e00-\u9fa5，。！？；：""''（）【】、]+$/;
-
-  // If it's pure Chinese text, process by character
-  if (chinesePattern.test(text)) {
-    for (let i = 0; i < text.length; i++) {
-      currentLine += text[i];
-
-      // Only break line when current line reaches the set character limit
-      if (currentLine.length >= lineWidth) {
-        result += currentLine + '\n';
-        currentLine = '';
-      }
-    }
-  } else {
-    // Process English or mixed Chinese-English text: split by spaces
-    const words = text.split(' ');
-
-    for (const word of words) {
-      // If the word itself exceeds line width, it needs to be split
-      if (word.length > lineWidth) {
-        // If current line already has content, output current line first
-        if (currentLine) {
-          result += currentLine + '\n';
-          currentLine = '';
-        }
-
-        // Split long word
-        const segments = splitLongWord(word);
-        for (let i = 0; i < segments.length - 1; i++) {
-          result += segments[i] + '\n';
-        }
-
-        // Last segment becomes the start of a new line
-        currentLine = segments[segments.length - 1];
-      } else {
-        // Try to add the word to current line
-        const testLine = currentLine ? currentLine + ' ' + word : word;
-
-        // If adding exceeds line width, break line
-        if (testLine.length > lineWidth) {
-          result += currentLine + '\n';
-          currentLine = word;
-        } else {
-          currentLine = testLine;
-        }
-      }
-    }
-  }
-
-  // Ensure the last line is also added to the result
-  if (currentLine) {
-    result += currentLine;
-  }
-
-  return result;
-}
-
-// Show text in chunks function, for handling very long text
-function showTextInChunks(text: string, maxLength: number = 500): void {
-  console.log(`Total display text length: ${text.length}`);
-
-  // If text length is within limit, display directly
-  if (text.length <= maxLength) {
-    popclip.showText(text);
-    return;
-  }
-
-  // Display text in chunks
-  let remainingText = text;
-  let chunkNumber = 1;
-  let totalChunks = Math.ceil(text.length / maxLength);
-
-  while (remainingText.length > 0) {
-    const currentChunk = remainingText.substring(0, maxLength);
-    const displayText = `[${chunkNumber}/${totalChunks}] ${currentChunk}`;
-
-    popclip.showText(displayText);
-
-    // Give users some time to view current chunk
-    // Note: Using setTimeout may not be suitable for PopClip environment
-    // Should be changed to appropriate delay mechanism or user trigger
-
-    remainingText = remainingText.substring(maxLength);
-    chunkNumber++;
-  }
-}
 
 // Translation main function
 const translate: ActionFunction<Options> = async (input, options) => {
@@ -219,15 +87,12 @@ const translate: ActionFunction<Options> = async (input, options) => {
     return;
   }
 
-  // Auto-detect language: If target language is Auto, determine if text contains Latin letters
-  let targetLang = options.targetLang;
-  if (targetLang === "Auto") {
-    const isEnglish = /[a-zA-Z]/.test(text);
-    targetLang = isEnglish ? "Chinese" : "English";
+  if (!options.apiKey) {
+    popclip.showText("Please set API Key in extension settings");
+    return;
   }
 
-  // Parse characters per line setting, ensure conversion to integer
-  const lineWidth = parseInt(options.lineWidth);
+  const targetLang = options.targetLang;
 
   // Build translation request message
   const messages: Message[] = [
@@ -242,8 +107,15 @@ const translate: ActionFunction<Options> = async (input, options) => {
   ];
 
   try {
-    // Show loading status
-    // popclip.showText("Translating...");
+    // Show loading indication
+    // Create cancel token for request
+    const CancelToken = axios.CancelToken;
+    const source = CancelToken.source();
+
+    // Set timeout to cancel request if it takes too long
+    const timeoutId = setTimeout(() => {
+      source.cancel('Translation request timeout');
+    }, 30000);
 
     // Send API request
     const response: Response = await axios({
@@ -257,21 +129,24 @@ const translate: ActionFunction<Options> = async (input, options) => {
         model: options.model,
         messages: messages,
         temperature: 0.3,
-        max_tokens: 4096  // Increase token count to ensure complete response
+        max_tokens: 4096  // Ensure complete response
       },
-      timeout: 30000  // Increase timeout to 30 seconds
+      timeout: 30000,
+      cancelToken: source.token
     });
+    
+    // Clear timeout since request completed
+    clearTimeout(timeoutId);
 
     // Process the response
     if (response.data && response.data.choices && response.data.choices.length > 0) {
-      // Get original translated text, without line breaks
+      // Get original translated text
       const translatedText = response.data.choices[0].message.content.trim();
 
-      // Add formatted text display for all display modes
-      const formattedDisplayText = formatText(translatedText, lineWidth);
-      popclip.showText(formattedDisplayText);
+      // Display the text
+      popclip.showText(translatedText);
       if (options.displayMode === "displayAndCopy") {
-        // Content copied to clipboard without line breaks
+        // Copy to clipboard
         popclip.copyText(translatedText);
       }
 
@@ -279,23 +154,48 @@ const translate: ActionFunction<Options> = async (input, options) => {
       popclip.showText("Translation failed: Invalid response data format");
     }
   } catch (error) {
-    const errorMessage = getErrorInfo(error);
-    popclip.showText(`Translation failed: ${errorMessage}`);
+    // Check if this was a cancelation
+    if (axios.isCancel(error)) {
+      popclip.showText("Translation canceled: Request took too long");
+    } else {
+      const errorMessage = getErrorInfo(error);
+      popclip.showText(`Translation failed: ${errorMessage}`);
+    }
   }
 };
 
 // Error handling function
 export function getErrorInfo(error: unknown): string {
+  // Handle axios errors with response data
   if (typeof error === "object" && error !== null && "response" in error) {
     const response = (error as any).response;
+    
+    // Check for rate limiting
+    if (response && response.status === 429) {
+      return "Rate limit exceeded. Please try again later.";
+    }
+    
+    // Check for authorization errors
+    if (response && response.status === 401) {
+      return "Invalid API key. Please check your API key in settings.";
+    }
+    
+    // Handle structured error responses
     if (response && response.data && response.data.error) {
       return `API error (${response.status}): ${response.data.error.message}`;
-    } else if (response && response.status) {
+    } 
+    
+    // Generic response error with status
+    if (response && response.status) {
       return `API error: Status code ${response.status}`;
     }
   }
 
+  // Handle network errors
   if (error instanceof Error) {
+    if (error.message.includes("Network Error")) {
+      return "Network connection error. Please check your internet connection.";
+    }
     return error.message;
   }
 
