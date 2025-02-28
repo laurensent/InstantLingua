@@ -4,7 +4,7 @@
 // description: Use multiple AI models to translate selected text
 // app: { name: InstantLingua Translator, link: 'https://github.com/laurensent/InstantLingua' }
 // popclipVersion: 4586
-// keywords: translate, grok, claude, anthropic, gemini, xai
+// keywords: translate, grok, claude, anthropic, gemini, openai, xai
 // entitlements: [network]
 // minOS: 14.0
 
@@ -44,6 +44,17 @@ const modelOptions = {
       "Gemini 1.5 Pro"
     ],
     defaultModel: "gemini-1.5-pro"
+  },
+  "openai": {
+    values: [
+      "gpt-4o-2024-08-06",
+      "gpt-4o-mini-2024-07-18",
+    ],
+    valueLabels: [
+      "GPT-4o",
+      "GPT-4o-mini",
+    ],
+    defaultModel: "gpt-4o-2024-08-06"
   }
 };
 
@@ -54,8 +65,8 @@ export const options = [
     label: "AI Provider",
     type: "multiple",
     defaultValue: "grok",
-    values: ["grok", "anthropic", "gemini"],
-    valueLabels: ["Grok (xAI)", "Claude (Anthropic)", "Gemini (Google)"],
+    values: ["grok", "anthropic", "gemini", "openai"],
+    valueLabels: ["Grok (xAI)", "Claude (Anthropic)", "Gemini (Google)", "OpenAI"],
     description: "Select which AI provider to use"
   },
   {
@@ -78,6 +89,13 @@ export const options = [
     type: "secret",
     description: "Get API Key from Google AI Studio: https://aistudio.google.com",
     dependsOn: { provider: "gemini" }
+  },
+  {
+    identifier: "openaiApiKey",
+    label: "OpenAI API Key",
+    type: "secret",
+    description: "Get API Key from OpenAI: https://platform.openai.com",
+    dependsOn: { provider: "openai" }
   },
   {
     identifier: "grokModel",
@@ -105,6 +123,15 @@ export const options = [
     values: modelOptions.gemini.values,
     valueLabels: modelOptions.gemini.valueLabels,
     dependsOn: { provider: "gemini" },
+  },
+  {
+    identifier: "openaiModel",
+    label: "OpenAI",
+    type: "multiple",
+    defaultValue: modelOptions.openai.defaultModel,
+    values: modelOptions.openai.values,
+    valueLabels: modelOptions.openai.valueLabels,
+    dependsOn: { provider: "openai" },
   },
   {
     identifier: "targetLang",
@@ -165,6 +192,10 @@ interface GeminiResponseData {
     content?: { parts: [{ text: string }] },
     text?: string
   }];
+}
+
+interface OpenAIResponseData {
+  choices: [{ message: { content: string } }];
 }
 
 // API Configuration interface
@@ -280,6 +311,10 @@ const providerConfigs: Record<string, ProviderConfig> = {
   "gemini": {
     getApiKey: (options) => options.geminiApiKey,
     getModel: (options) => options.geminiModel
+  },
+  "openai": {
+    getApiKey: (options) => options.openaiApiKey,
+    getModel: (options) => options.openaiModel
   }
 };
 
@@ -382,6 +417,25 @@ function buildApiConfig(
         }
       };
     
+    case "openai":
+      return {
+        url: "https://api.openai.com/v1/chat/completions",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`
+        },
+        data: {
+          model: model,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: text }
+          ],
+          temperature: 0.3,
+          max_tokens: 4096
+        },
+        extractContent: (data: OpenAIResponseData) => data.choices[0].message.content.trim()
+      };
+    
     default:
       throw new Error(`Unsupported provider: ${provider}`);
   }
@@ -454,6 +508,10 @@ export function getErrorInfo(error: unknown): string {
     
     if (error.message.includes("x.ai")) {
       return `Grok API error: ${error.message}`;
+    }
+    
+    if (error.message.includes("openai") || error.message.includes("api.openai.com")) {
+      return `OpenAI API error: ${error.message}`;
     }
     
     return error.message;

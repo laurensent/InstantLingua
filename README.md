@@ -1,6 +1,6 @@
 # InstantLingua
 
-Translate the selected word or short phrase instantly within PopClip. Powered by multiple AI providers: Grok, Claude, and Gemini.
+Translate the selected word or short phrase instantly within PopClip. Powered by multiple AI providers: Grok, Claude, Gemini, and OpenAI.
 
 ![](/InstantLingua.png)
 
