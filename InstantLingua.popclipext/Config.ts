@@ -1,21 +1,29 @@
 // #popclip
 // name: InstantLingua
-// icon: symbol:translate
-// description: Use multiple AI models to translate selected text
+// #icon: symbol:guitars.fill
+// icon: symbol:brain.head.profile.fill
+// description: Use multiple AI models to translate, check grammar, or compose replies
 // app: { name: InstantLingua Translator, link: 'https://github.com/laurensent/InstantLingua' }
 // popclipVersion: 4586
-// keywords: translate, grok, claude, anthropic, gemini, openai, xai
+// keywords: translate, grok, claude, anthropic, gemini, openai, xai, grammar, reply
 // entitlements: [network]
 // minOS: 14.0
+// author: laurensent
 
 import axios from "axios";
 
 // Model configuration with labels
 const modelOptions = {
-  "grok": {
-    values: ["grok-2-1212"],
-    valueLabels: ["Grok 2"],
-    defaultModel: "grok-2-1212"
+  "openai": {
+    values: [
+      "gpt-4o-2024-08-06",
+      "gpt-4o-mini-2024-07-18",
+    ],
+    valueLabels: [
+      "GPT-4o",
+      "GPT-4o-mini",
+    ],
+    defaultModel: "gpt-4o-mini-2024-07-18"
   },
   "anthropic": {
     values: [
@@ -29,6 +37,11 @@ const modelOptions = {
       "Claude 3.5 Haiku"
     ],
     defaultModel: "claude-3-5-sonnet-20240620"
+  },
+  "grok": {
+    values: ["grok-2-1212"],
+    valueLabels: ["Grok 2"],
+    defaultModel: "grok-2-1212"
   },
   "gemini": {
     values: [
@@ -44,30 +57,42 @@ const modelOptions = {
       "Gemini 1.5 Pro"
     ],
     defaultModel: "gemini-1.5-pro"
-  },
-  "openai": {
-    values: [
-      "gpt-4o-2024-08-06",
-      "gpt-4o-mini-2024-07-18",
-    ],
-    valueLabels: [
-      "GPT-4o",
-      "GPT-4o-mini",
-    ],
-    defaultModel: "gpt-4o-2024-08-06"
   }
 };
 
 // Static options configuration
 export const options = [
   {
+    identifier: "taskType",
+    label: "Task",
+    type: "multiple",
+    defaultValue: "translate",
+    values: ["translate", "grammar", "reply"],
+    valueLabels: ["Translate", "Grammar Check", "Reply Suggestions"],
+    description: "Select action to perform on text"
+  },
+  {
+    identifier: "displayMode",
+    label: "Display Mode",
+    type: "multiple",
+    values: ["display", "displayAndCopy"],
+    valueLabels: ["Display Only", "Display and Copy"],
+    defaultValue: "display"
+  },
+  {
     identifier: "provider",
     label: "AI Provider",
     type: "multiple",
     defaultValue: "grok",
-    values: ["grok", "anthropic", "gemini", "openai"],
-    valueLabels: ["Grok (xAI)", "Claude (Anthropic)", "Gemini (Google)", "OpenAI"],
-    description: "Select which AI provider to use"
+    values: ["openai", "anthropic", "grok", "gemini"],
+    valueLabels: ["OpenAI", "Claude (Anthropic)", "Grok (xAI)", "Gemini (Google)"]
+  },
+  {
+    identifier: "openaiApiKey",
+    label: "OpenAI API Key",
+    type: "secret",
+    description: "Get API Key from OpenAI: https://platform.openai.com",
+    dependsOn: { provider: "openai" }
   },
   {
     identifier: "grokApiKey",
@@ -89,13 +114,6 @@ export const options = [
     type: "secret",
     description: "Get API Key from Google AI Studio: https://aistudio.google.com",
     dependsOn: { provider: "gemini" }
-  },
-  {
-    identifier: "openaiApiKey",
-    label: "OpenAI API Key",
-    type: "secret",
-    description: "Get API Key from OpenAI: https://platform.openai.com",
-    dependsOn: { provider: "openai" }
   },
   {
     identifier: "grokModel",
@@ -137,6 +155,7 @@ export const options = [
     identifier: "targetLang",
     label: "Target Language",
     type: "multiple",
+    description: "Select target language for translation",
     defaultValue: "Chinese",
     values: [
       "English", 
@@ -158,16 +177,8 @@ export const options = [
       "Thai", 
       "Swedish"
     ],
-  },
-  {
-    identifier: "displayMode",
-    label: "Display Mode",
-    type: "multiple",
-    values: ["display", "displayAndCopy"],
-    valueLabels: ["Display Only", "Display and Copy"],
-    defaultValue: "display",
-    description: "Display only or display and copy to clipboard",
-  },
+    dependsOn: { taskType: "translate" },
+  }
 ] as const;
 
 type Options = InferOptions<typeof options>;
@@ -206,10 +217,11 @@ interface ApiConfig {
   extractContent: (data: any) => string;
 }
 
-// No initialization required since we use static model lists
-
-// Translation main function
-const translate: ActionFunction<Options> = async (input, options) => {
+// Main function for all task types
+const processText: ActionFunction<Options> = async (input, options) => {
+  // Show initial loading indicator
+  // popclip.showText("Processing...");
+  
   const text = input.text.trim();
 
   if (!text) {
@@ -226,7 +238,6 @@ const translate: ActionFunction<Options> = async (input, options) => {
     return;
   }
 
-  const targetLang = options.targetLang;
   const model = getModelForProvider(options);
   
   // Check if model is selected
@@ -235,20 +246,44 @@ const translate: ActionFunction<Options> = async (input, options) => {
     return;
   }
 
+  // Get appropriate system prompt based on task type
+  const taskType = options.taskType;
+  let systemPrompt = "";
+  let processingText = "";
+
+  switch (taskType) {
+    case "translate":
+      const targetLang = options.targetLang;
+      systemPrompt = `You are a professional translator; please translate the user's text to ${targetLang}, emphasizing natural expression, clarity, accuracy, and fluency; don't add any explanations or comments.`;
+      processingText = `Translating to ${targetLang}...`;
+      break;
+    case "grammar":
+      systemPrompt = `You are a professional editor with expertise in proofreading. Carefully identify and fix all grammar, spelling, punctuation, and style issues in the text. Improve sentence structure and flow where needed, but maintain the original meaning. Only return the corrected text, with no explanations or annotations. If the text is already perfect, return it unchanged.`;
+      processingText = "Grammar checking...";
+      break;
+    case "reply":
+      systemPrompt = `You are an expert communication assistant. The text provided is a message someone has sent to the user. Draft an extremely concise, clear reply that addresses the key points effectively. Keep the response brief and to-the-point while maintaining professionalism. Use no more than 2-3 short sentences when possible. Return only the ready-to-send reply with no explanations or comments.`;
+      processingText = "Drafting reply...";
+      break;
+    default:
+      popclip.showText(`Invalid task type: ${taskType}`);
+      return;
+  }
+
+  // Update loading indicator with specific task
+  // popclip.showText(processingText);
+
   // Build request configuration based on provider
-  const apiConfig = buildApiConfig(provider, apiKey, model, targetLang, text);
+  const apiConfig = buildApiConfig(provider, apiKey, model, systemPrompt, text);
 
   try {
-    // Show loading indication
-    // popclip.showText("Translating...");
-
     // Create cancel token for request
     const CancelToken = axios.CancelToken;
     const source = CancelToken.source();
 
     // Set timeout to cancel request if it takes too long
     const timeoutId = setTimeout(() => {
-      source.cancel('Translation request timeout');
+      source.cancel('Request timeout');
     }, 30000);
 
     // Send API request
@@ -267,28 +302,28 @@ const translate: ActionFunction<Options> = async (input, options) => {
     // Process the response using the provider-specific extraction function
     if (response.data) {
       try {
-        const translatedText = apiConfig.extractContent(response.data);
+        const processedText = apiConfig.extractContent(response.data);
         
         // Display the text
-        popclip.showText(translatedText);
+        popclip.showText(processedText);
         if (options.displayMode === "displayAndCopy") {
           // Copy to clipboard
-          popclip.copyText(translatedText);
+          popclip.copyText(processedText);
         }
       } catch (parseError) {
         console.error("Failed to parse response:", parseError);
-        popclip.showText("Translation failed: Unexpected response format");
+        popclip.showText("Processing failed: Unexpected response format");
       }
     } else {
-      popclip.showText("Translation failed: Empty response");
+      popclip.showText("Processing failed: Empty response");
     }
   } catch (error) {
     // Check if this was a cancelation
     if (axios.isCancel(error)) {
-      popclip.showText("Translation canceled: Request took too long");
+      popclip.showText("Request canceled: Took too long");
     } else {
       const errorMessage = getErrorInfo(error);
-      popclip.showText(`Translation failed: ${errorMessage}`);
+      popclip.showText(`Processing failed: ${errorMessage}`);
     }
   }
 };
@@ -300,21 +335,21 @@ interface ProviderConfig {
 }
 
 const providerConfigs: Record<string, ProviderConfig> = {
-  "grok": {
-    getApiKey: (options) => options.grokApiKey,
-    getModel: (options) => options.grokModel
+  "openai": {
+    getApiKey: (options) => options.openaiApiKey,
+    getModel: (options) => options.openaiModel
   },
   "anthropic": {
     getApiKey: (options) => options.anthropicApiKey,
     getModel: (options) => options.anthropicModel
   },
+  "grok": {
+    getApiKey: (options) => options.grokApiKey,
+    getModel: (options) => options.grokModel
+  },
   "gemini": {
     getApiKey: (options) => options.geminiApiKey,
     getModel: (options) => options.geminiModel
-  },
-  "openai": {
-    getApiKey: (options) => options.openaiApiKey,
-    getModel: (options) => options.openaiModel
   }
 };
 
@@ -333,12 +368,9 @@ function buildApiConfig(
   provider: string, 
   apiKey: string, 
   model: string, 
-  targetLang: string, 
+  systemPrompt: string, 
   text: string
 ): ApiConfig {
-  // Common system message for all providers
-  const systemPrompt = `You are a professional translator; please translate the user's text to ${targetLang}, emphasizing natural expression, clarity, accuracy, and fluency; don't add any explanations or comments.`;
-  
   switch (provider) {
     case "grok":
       return {
@@ -389,7 +421,7 @@ function buildApiConfig(
           contents: [
             {
               parts: [
-                { text: systemPrompt + "\n\nTranslate the following text:\n\n" + text }
+                { text: systemPrompt + "\n\nProcess the following text:\n\n" + text }
               ]
             }
           ],
@@ -523,7 +555,7 @@ export function getErrorInfo(error: unknown): string {
 // Export actions
 export const actions: Action<Options>[] = [
   {
-    title: "Translate",
-    code: translate,
+    title: "InstantLingua",
+    code: processText,
   }
 ];
