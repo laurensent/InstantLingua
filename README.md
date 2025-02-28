@@ -40,3 +40,20 @@ InstantLingua natively supports the following languages via API key, ensuring se
 - Swedish  
 
 InstantLingua enhances your PopClip experience with fast, AI-driven language tools.
+
+## Installation
+
+1. Download the latest release from the repository
+2. Double-click the .popclipextz file to install
+3. Configure your preferred AI provider API key in PopClip settings
+
+## Setup
+
+1. Open PopClip settings
+2. Find InstantLingua in your extensions
+3. Enter your API key for your preferred AI provider (OpenAI, Claude, Grok, or Gemini)
+4. Select your preferred task or default translation language when using the translator
+
+## License
+
+InstantLingua is available under the MIT License. See the LICENSE file for details.
