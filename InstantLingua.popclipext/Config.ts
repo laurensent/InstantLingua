@@ -217,6 +217,20 @@ interface ApiConfig {
   extractContent: (data: any) => string;
 }
 
+// Function to detect if text is Chinese
+function isChinese(text: string): boolean {
+  // Check if text contains Chinese characters
+  return /[\u4e00-\u9fff]/.test(text);
+}
+
+// Function to detect if text is primarily English
+function isEnglish(text: string): boolean {
+  // Check if text contains primarily English characters and spaces
+  const nonEnglishChars = text.replace(/[a-zA-Z0-9\s.,?!;:'"()-]/g, '');
+  // If less than 20% non-English characters, consider it English
+  return (nonEnglishChars.length / text.length) < 0.2;
+}
+
 // Main function for all task types
 const processText: ActionFunction<Options> = async (input, options) => {
   // Show initial loading indicator
@@ -254,8 +268,28 @@ const processText: ActionFunction<Options> = async (input, options) => {
   switch (taskType) {
     case "translate":
       const targetLang = options.targetLang;
-      systemPrompt = `You are a professional translator; please translate the user's text to ${targetLang}, emphasizing natural expression, clarity, accuracy, and fluency; don't add any explanations or comments.`;
-      processingText = `Translating to ${targetLang}...`;
+      
+      // Auto-detect and switch between Chinese and English
+      if (targetLang === "Chinese" || targetLang === "English") {
+        const isChineseText = isChinese(text);
+        const isEnglishText = isEnglish(text);
+        
+        // If text is Chinese and target is Chinese, or text is English and target is English,
+        // switch the target language to the opposite
+        if ((isChineseText && targetLang === "Chinese") || (isEnglishText && targetLang === "English")) {
+          const autoTargetLang = isChineseText ? "English" : "Chinese";
+          systemPrompt = `You are a professional translator; please translate the user's text from ${isChineseText ? "Chinese" : "English"} to ${autoTargetLang}, emphasizing natural expression, clarity, accuracy, and fluency; don't add any explanations or comments.`;
+          processingText = `Auto-detected ${isChineseText ? "Chinese" : "English"}, translating to ${autoTargetLang}...`;
+        } else {
+          // Use the selected target language as normal
+          systemPrompt = `You are a professional translator; please translate the user's text to ${targetLang}, emphasizing natural expression, clarity, accuracy, and fluency; don't add any explanations or comments.`;
+          processingText = `Translating to ${targetLang}...`;
+        }
+      } else {
+        // For other target languages, keep the original behavior
+        systemPrompt = `You are a professional translator; please translate the user's text to ${targetLang}, emphasizing natural expression, clarity, accuracy, and fluency; don't add any explanations or comments.`;
+        processingText = `Translating to ${targetLang}...`;
+      }
       break;
     case "grammar":
       systemPrompt = `You are a professional editor with expertise in proofreading. Carefully identify and fix all grammar, spelling, punctuation, and style issues in the text. Improve sentence structure and flow where needed, but maintain the original meaning. Only return the corrected text, with no explanations or annotations. If the text is already perfect, return it unchanged.`;
