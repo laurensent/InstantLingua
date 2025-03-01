@@ -1,14 +1,14 @@
 // #popclip
 // name: InstantLingua
+// identifier: com.laurensent.popclip.extension.instant-lingua
 // #icon: symbol:guitars.fill
 // icon: symbol:brain.head.profile.fill
-// description: Use multiple AI models to translate, check grammar, or compose replies
-// app: { name: InstantLingua Translator, link: 'https://github.com/laurensent/InstantLingua' }
-// popclipVersion: 4586
-// keywords: translate, grok, claude, anthropic, gemini, openai, xai, grammar, reply
+// popclipVersion: 4508
+// description: LLM-Powered PopClip Extension for Translation & Writing
+// app: { name: InstantLingua, link: 'https://github.com/laurensent/InstantLingua' }
+// keywords: translate, grammar, reply
 // entitlements: [network]
-// minOS: 14.0
-// author: laurensent
+// ver: 0.5
 
 import axios from "axios";
 
@@ -63,6 +63,13 @@ const modelOptions = {
 // Static options configuration
 export const options = [
   {
+    identifier: "splitMode",
+    label: "Split Mode",
+    type: "boolean",
+    defaultValue: false,
+    description: "Use separate buttons for tasks or one for all"
+  },
+  {
     identifier: "taskType",
     label: "Task",
     type: "multiple",
@@ -95,18 +102,18 @@ export const options = [
     dependsOn: { provider: "openai" }
   },
   {
-    identifier: "grokApiKey",
-    label: "Grok API Key",
-    type: "secret",
-    description: "Get API Key from xAI: https://x.ai",
-    dependsOn: { provider: "grok" }
-  },
-  {
     identifier: "anthropicApiKey",
     label: "Anthropic API Key",
     type: "secret",
     description: "Get API Key from Anthropic: https://console.anthropic.com",
     dependsOn: { provider: "anthropic" }
+  },
+  {
+    identifier: "grokApiKey",
+    label: "Grok API Key",
+    type: "secret",
+    description: "Get API Key from xAI: https://x.ai",
+    dependsOn: { provider: "grok" }
   },
   {
     identifier: "geminiApiKey",
@@ -590,6 +597,29 @@ export function getErrorInfo(error: unknown): string {
 export const actions: Action<Options>[] = [
   {
     title: "InstantLingua",
+    icon: "symbol:brain.head.profile.fill",
+    requirements: ["text", "option-splitMode=0"],
     code: processText,
-  }
+  },
+  {
+    title: "Translate",
+    icon: "symbol:translate",
+    requirements: ["text", "option-splitMode=1"],
+    code: (input, options) =>
+      processText(input, { ...options, taskType: "translate" }),
+  },
+  {
+    title: "Grammar Check",
+    icon: "symbol:text.badge.checkmark",
+    requirements: ["text", "option-splitMode=1"],
+    code: (input, options) =>
+      processText(input, { ...options, taskType: "grammar" }),
+  },
+  {
+    title: "Reply Suggestions",
+    icon: "symbol:lightbulb.fill",
+    requirements: ["text", "option-splitMode=1"],
+    code: (input, options) =>
+      processText(input, { ...options, taskType: "reply" }),
+  },
 ];
