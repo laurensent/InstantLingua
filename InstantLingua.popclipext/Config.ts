@@ -8,7 +8,7 @@
 // app: { name: InstantLingua, link: 'https://github.com/laurensent/InstantLingua' }
 // keywords: translate, grammar, reply
 // entitlements: [network]
-// ver: 0.5
+// ver: 0.5.1
 
 import axios from "axios";
 
@@ -277,22 +277,21 @@ const processText: ActionFunction<Options> = async (input, options) => {
       const targetLang = options.targetLang;
       
       // Auto-detect and switch between Chinese and English
-      if (targetLang === "Chinese" || targetLang === "English") {
+      if (targetLang === "Chinese") {
         const isChineseText = isChinese(text);
-        const isEnglishText = isEnglish(text);
-        
-        // If text is Chinese and target is Chinese, or text is English and target is English,
-        // switch the target language to the opposite
-        if ((isChineseText && targetLang === "Chinese") || (isEnglishText && targetLang === "English")) {
-          const autoTargetLang = isChineseText ? "English" : "Chinese";
-          systemPrompt = `You are a professional translator; please translate the user's text from ${isChineseText ? "Chinese" : "English"} to ${autoTargetLang}, emphasizing natural expression, clarity, accuracy, and fluency; don't add any explanations or comments.`;
-          processingText = `Auto-detected ${isChineseText ? "Chinese" : "English"}, translating to ${autoTargetLang}...`;
+
+        // Only when target is Chinese, we check if we need to auto-switch
+        if (isChineseText) {
+          // If text is already Chinese and target is Chinese, switch to English
+          systemPrompt = `You are a professional translator; please translate the user's text from Chinese to English, emphasizing natural expression, clarity, accuracy, and fluency; don't add any explanations or comments.`;
+          processingText = `Auto-detected Chinese, translating to English...`;
         } else {
-          // Use the selected target language as normal
-          systemPrompt = `You are a professional translator; please translate the user's text to ${targetLang}, emphasizing natural expression, clarity, accuracy, and fluency; don't add any explanations or comments.`;
-          processingText = `Translating to ${targetLang}...`;
+          // Text is not Chinese, so proceed with normal Chinese translation
+          systemPrompt = `You are a professional translator; please translate the user's text to Chinese, emphasizing natural expression, clarity, accuracy, and fluency; don't add any explanations or comments.`;
+          processingText = `Translating to Chinese...`;
         }
-      } else {
+      }
+      else {
         // For other target languages, keep the original behavior
         systemPrompt = `You are a professional translator; please translate the user's text to ${targetLang}, emphasizing natural expression, clarity, accuracy, and fluency; don't add any explanations or comments.`;
         processingText = `Translating to ${targetLang}...`;
