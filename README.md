@@ -1,4 +1,4 @@
-# InstantLingua – LLM-Powered PopClip Extension for Translation & Writing  
+# InstantLingua  
 
 ![](/InstantLingua.png)
 
