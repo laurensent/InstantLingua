@@ -8,7 +8,7 @@
 // app: { name: InstantLingua, link: 'https://github.com/laurensent/InstantLingua' }
 // keywords: translate, grammar, reply
 // entitlements: [network]
-// ver: 0.5.2
+// ver: 0.7.0
 
 import axios from "axios";
 
@@ -18,10 +18,18 @@ const modelOptions = {
     values: [
       "gpt-4o-2024-08-06",
       "gpt-4o-mini-2024-07-18",
+      "gpt-4.1-2025-04-14",
+      "gpt-4.1-mini-2025-04-14",
+      "gpt-4.1-nano-2025-04-14",
+      "o4-mini-2025-04-16"
     ],
     valueLabels: [
+      "GPT-4.1",
+      "GPT-4.1-mini",
+      "GPT-4.1-nano",
+      "o4-mini",
       "GPT-4o",
-      "GPT-4o-mini",
+      "GPT-4o-mini"
     ],
     defaultModel: "gpt-4o-mini-2024-07-18"
   },
@@ -39,24 +47,40 @@ const modelOptions = {
     defaultModel: "claude-3-5-sonnet-20240620"
   },
   "grok": {
-    values: ["grok-2-1212"],
-    valueLabels: ["Grok 2"],
-    defaultModel: "grok-2-1212"
+    values: [
+      "grok-2-1212",
+      "grok-3-mini-fast-beta",
+      "grok-3-mini-beta",
+      "grok-3-fast-beta",
+      "grok-3-beta"
+    ],
+    valueLabels: [
+      "Grok 3 Mini Fast Beta",
+      "Grok 3 Mini Beta",
+      "Grok 3 Fast Beta",
+      "Grok 3 Beta",
+      "Grok 2"
+    ],
+    defaultModel: "grok-3-beta"
   },
   "gemini": {
     values: [
       "gemini-2.0-flash", 
       "gemini-2.0-flash-lite",
       "gemini-1.5-flash",
-      "gemini-1.5-pro"
+      "gemini-1.5-pro",
+      "gemini-2.5-flash-preview-04-17",
+      "gemini-2.5-pro-preview-03-25"
     ],
     valueLabels: [
+      "Gemini 2.5 Flash Preview",
+      "Gemini 2.5 Pro Preview",
       "Gemini 2.0 Flash", 
       "Gemini 2.0 Flash-Lite",
       "Gemini 1.5 Flash",
       "Gemini 1.5 Pro"
     ],
-    defaultModel: "gemini-1.5-pro"
+    defaultModel: "gemini-2.5-flash-preview-04-17"
   }
 };
 
