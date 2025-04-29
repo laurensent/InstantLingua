@@ -8,80 +8,65 @@
 // app: { name: InstantLingua, link: 'https://github.com/laurensent/InstantLingua' }
 // keywords: translate, grammar, reply
 // entitlements: [network]
-// ver: 0.7.0
+// ver: 0.8.0
 
 import axios from "axios";
 
-// Model configuration with labels
-const modelOptions = {
-  "openai": {
-    values: [
-      "gpt-4o-2024-08-06",
-      "gpt-4o-mini-2024-07-18",
-      "gpt-4.1-2025-04-14",
-      "gpt-4.1-mini-2025-04-14",
-      "gpt-4.1-nano-2025-04-14",
-      "o4-mini-2025-04-16"
-    ],
-    valueLabels: [
-      "GPT-4.1",
-      "GPT-4.1-mini",
-      "GPT-4.1-nano",
-      "o4-mini",
-      "GPT-4o",
-      "GPT-4o-mini"
-    ],
-    defaultModel: "gpt-4o-mini-2024-07-18"
-  },
-  "anthropic": {
-    values: [
-      "claude-3-7-sonnet-20250219",
-      "claude-3-5-sonnet-20240620", 
-      "claude-3-5-haiku-20241022"
-    ],
-    valueLabels: [
-      "Claude 3.7 Sonnet",
-      "Claude 3.5 Sonnet", 
-      "Claude 3.5 Haiku"
-    ],
-    defaultModel: "claude-3-5-sonnet-20240620"
-  },
-  "grok": {
-    values: [
-      "grok-2-1212",
-      "grok-3-mini-fast-beta",
-      "grok-3-mini-beta",
-      "grok-3-fast-beta",
-      "grok-3-beta"
-    ],
-    valueLabels: [
-      "Grok 3 Mini Fast Beta",
-      "Grok 3 Mini Beta",
-      "Grok 3 Fast Beta",
-      "Grok 3 Beta",
-      "Grok 2"
-    ],
-    defaultModel: "grok-3-beta"
-  },
-  "gemini": {
-    values: [
-      "gemini-2.0-flash", 
-      "gemini-2.0-flash-lite",
-      "gemini-1.5-flash",
-      "gemini-1.5-pro",
-      "gemini-2.5-flash-preview-04-17",
-      "gemini-2.5-pro-preview-03-25"
-    ],
-    valueLabels: [
-      "Gemini 2.5 Flash Preview",
-      "Gemini 2.5 Pro Preview",
-      "Gemini 2.0 Flash", 
-      "Gemini 2.0 Flash-Lite",
-      "Gemini 1.5 Flash",
-      "Gemini 1.5 Pro"
-    ],
-    defaultModel: "gemini-2.5-flash-preview-04-17"
-  }
+// Model configuration with provider prefixes
+const allModels = {
+  values: [
+    // OpenAI models
+    "openai:gpt-4o-2024-08-06",
+    "openai:gpt-4o-mini-2024-07-18",
+    "openai:gpt-4.1-2025-04-14",
+    "openai:gpt-4.1-mini-2025-04-14", 
+    "openai:gpt-4.1-nano-2025-04-14",
+    "openai:o4-mini-2025-04-16",
+    // Anthropic models
+    "anthropic:claude-3-7-sonnet-20250219",
+    "anthropic:claude-3-5-sonnet-20240620",
+    "anthropic:claude-3-5-haiku-20241022",
+    // Grok models
+    "grok:grok-3-beta",
+    "grok:grok-3-fast-beta",
+    "grok:grok-3-mini-beta",
+    "grok:grok-3-mini-fast-beta",
+    "grok:grok-2-1212",
+    // Gemini models
+    "gemini:gemini-2.5-flash-preview-04-17",
+    "gemini:gemini-2.5-pro-preview-03-25",
+    "gemini:gemini-2.0-flash",
+    "gemini:gemini-2.0-flash-lite",
+    "gemini:gemini-1.5-flash",
+    "gemini:gemini-1.5-pro"
+  ],
+  valueLabels: [
+    // OpenAI models
+    "GPT-4o",
+    "GPT-4o mini",
+    "GPT-4.1",
+    "GPT-4.1 mini",
+    "GPT-4.1 nano",
+    "o4 mini",
+    // Anthropic models
+    "Claude 3.7 Sonnet",
+    "Claude 3.5 Sonnet",
+    "Claude 3.5 Haiku",
+    // Grok models
+    "Grok 3 Beta",
+    "Grok 3 Fast Beta",
+    "Grok 3 Mini Beta",
+    "Grok 3 Mini Fast Beta",
+    "Grok 2",
+    // Gemini models
+    "Gemini 2.5 Flash Preview",
+    "Gemini 2.5 Pro Preview",
+    "Gemini 2.0 Flash",
+    "Gemini 2.0 Flash-Lite",
+    "Gemini 1.5 Flash",
+    "Gemini 1.5 Pro"
+  ],
+  defaultValue: "grok-3-beta"
 };
 
 // Static options configuration
@@ -98,89 +83,9 @@ export const options = [
     label: "Task",
     type: "multiple",
     defaultValue: "translate",
-    values: ["translate", "grammar", "reply"],
-    valueLabels: ["Translate", "Grammar Check", "Reply Suggestions"],
+    values: ["translate", "grammar", "reply", "rewrite"],
+    valueLabels: ["Translate", "Grammar Check", "Reply Suggestions", "Rewrite"],
     description: "Select action to perform on text"
-  },
-  {
-    identifier: "displayMode",
-    label: "Display Mode",
-    type: "multiple",
-    values: ["display", "displayAndCopy"],
-    valueLabels: ["Display Only", "Display and Copy"],
-    defaultValue: "display"
-  },
-  {
-    identifier: "provider",
-    label: "AI Provider",
-    type: "multiple",
-    defaultValue: "grok",
-    values: ["openai", "anthropic", "grok", "gemini"],
-    valueLabels: ["OpenAI", "Claude (Anthropic)", "Grok (xAI)", "Gemini (Google)"]
-  },
-  {
-    identifier: "openaiApiKey",
-    label: "OpenAI API Key",
-    type: "secret",
-    description: "Get API Key from OpenAI: https://platform.openai.com",
-    dependsOn: { provider: "openai" }
-  },
-  {
-    identifier: "anthropicApiKey",
-    label: "Anthropic API Key",
-    type: "secret",
-    description: "Get API Key from Anthropic: https://console.anthropic.com",
-    dependsOn: { provider: "anthropic" }
-  },
-  {
-    identifier: "grokApiKey",
-    label: "Grok API Key",
-    type: "secret",
-    description: "Get API Key from xAI: https://x.ai",
-    dependsOn: { provider: "grok" }
-  },
-  {
-    identifier: "geminiApiKey",
-    label: "Gemini API Key", 
-    type: "secret",
-    description: "Get API Key from Google AI Studio: https://aistudio.google.com",
-    dependsOn: { provider: "gemini" }
-  },
-  {
-    identifier: "grokModel",
-    label: "xAI",
-    type: "multiple",
-    defaultValue: modelOptions.grok.defaultModel,
-    values: modelOptions.grok.values,
-    valueLabels: modelOptions.grok.valueLabels,
-    dependsOn: { provider: "grok" },
-  },
-  {
-    identifier: "anthropicModel",
-    label: "Anthropic",
-    type: "multiple",
-    defaultValue: modelOptions.anthropic.defaultModel,
-    values: modelOptions.anthropic.values,
-    valueLabels: modelOptions.anthropic.valueLabels,
-    dependsOn: { provider: "anthropic" },
-  },
-  {
-    identifier: "geminiModel",
-    label: "Google AI",
-    type: "multiple",
-    defaultValue: modelOptions.gemini.defaultModel,
-    values: modelOptions.gemini.values,
-    valueLabels: modelOptions.gemini.valueLabels,
-    dependsOn: { provider: "gemini" },
-  },
-  {
-    identifier: "openaiModel",
-    label: "OpenAI",
-    type: "multiple",
-    defaultValue: modelOptions.openai.defaultModel,
-    values: modelOptions.openai.values,
-    valueLabels: modelOptions.openai.valueLabels,
-    dependsOn: { provider: "openai" },
   },
   {
     identifier: "targetLang",
@@ -209,6 +114,68 @@ export const options = [
       "Swedish"
     ],
     dependsOn: { taskType: "translate" },
+  },
+  {
+    identifier: "rewriteStyle",
+    label: "Rewrite Style",
+    type: "multiple",
+    defaultValue: "improve",
+    values: ["improve", "paraphrase", "shorten", "descriptive", "simplify", "informative", "fluent", "professional"],
+    valueLabels: ["Improve", "Paraphrase", "Shorten", "More Descriptive", "Simplify", "Informative", "More Fluent", "Professional"],
+    description: "Select style for text rewriting",
+    dependsOn: { taskType: "rewrite" }
+  },
+  {
+    identifier: "displayMode",
+    label: "Display Mode",
+    type: "multiple",
+    values: ["display", "displayAndCopy"],
+    valueLabels: ["Display Only", "Display and Copy"],
+    defaultValue: "display"
+  },
+  {
+    identifier: "model",
+    label: "Model",
+    type: "multiple",
+    defaultValue: allModels.defaultValue,
+    values: allModels.values,
+    valueLabels: allModels.valueLabels
+  },
+  {
+    identifier: "temperature",
+    label: "Temperature",
+    type: "string",
+    defaultValue: "0.3",
+    description: "Higher values make output more random, lower more deterministic (0-1)",
+    optional: true
+  },
+  {
+    identifier: "openaiApiKey",
+    label: "OpenAI API Key",
+    type: "secret",
+    description: "Get API Key from https://platform.openai.com",
+    dependsOn: { model: value => value.startsWith("openai:") }
+  },
+  {
+    identifier: "anthropicApiKey",
+    label: "Anthropic API Key",
+    type: "secret",
+    description: "Get API Key from https://console.anthropic.com",
+    dependsOn: { model: value => value.startsWith("anthropic:") }
+  },
+  {
+    identifier: "grokApiKey",
+    label: "Grok API Key",
+    type: "secret",
+    description: "Get API Key from https://x.ai",
+    dependsOn: { model: value => value.startsWith("grok:") }
+  },
+  {
+    identifier: "geminiApiKey",
+    label: "Gemini API Key", 
+    type: "secret",
+    description: "Get API Key from https://aistudio.google.com",
+    dependsOn: { model: value => value.startsWith("gemini:") }
   }
 ] as const;
 
@@ -274,8 +241,8 @@ const processText: ActionFunction<Options> = async (input, options) => {
     return;
   }
 
-  // Get the provider and check API key
-  const provider = options.provider;
+  // Get the provider from model selection and check API key
+  const provider = getProviderFromModel(options.model);
   const apiKey = getApiKey(options);
   
   if (!apiKey) {
@@ -367,6 +334,51 @@ Important rules:
     systemPrompt = `You are an expert communication assistant. The text provided is a message someone has sent to the user. Draft an extremely concise, clear reply that addresses the key points effectively. Keep the response brief and to-the-point while maintaining professionalism. Use no more than 2-3 short sentences when possible. Return only the ready-to-send reply with no explanations or comments.`;
     processingText = "Drafting reply...";
     break;
+  case "rewrite":
+    const rewriteStyle = options.rewriteStyle;
+    let styleInstruction = "";
+    
+    switch (rewriteStyle) {
+      case "improve":
+        styleInstruction = "Improve the text while maintaining its meaning. Focus on clarity, correctness, and readability.";
+        break;
+      case "paraphrase":
+        styleInstruction = "Paraphrase the text using different wording while preserving the original meaning.";
+        break;
+      case "shorten
+        styleInstruction = "Shorten the text while preserving the essential meaning and key points.";
+        break;
+      case "descriptive":
+        styleInstruction = "Make the text more descriptive with additional details and vivid language while maintaining the core message.";
+        break;
+      case "simplify":
+        styleInstruction = "Simplify the text to make it easier to understand. Use simpler vocabulary and sentence structures.";
+        break;
+      case "informative":
+        styleInstruction = "Make the text more informative by adding clarity and relevant context while keeping it concise.";
+        break;
+      case "fluent":
+        styleInstruction = "Make the text sound more natural and fluent, focusing on improved flow and readability.";
+        break;
+      case "professional":
+        styleInstruction = "Make the text sound more professional with formal language and clear, structured phrasing.";
+        break;
+      default:
+        styleInstruction = "Improve the text while maintaining its meaning.";
+    }
+    
+    systemPrompt = `You are an expert writing assistant. Your ONLY task is to rewrite the provided text according to the following style instruction. ${styleInstruction}
+
+Important rules:
+1. Understand the meaning of the text but don't over-interpret
+2. Precisely follow the style instruction
+3. Maintain the original facts and information
+4. ONLY return the rewritten text with no explanations or comments
+5. Preserve paragraph formatting and technical terms
+6. Keep all names, abbreviations, and specialized terminology intact
+7. If the text is perfect for the requested style, you may return it with minimal changes`;
+    processingText = `Rewriting text (${rewriteStyle})...`;
+    break;
   default:
     popclip.showText(`Invalid task type: ${taskType}`);
     return;
@@ -376,7 +388,9 @@ Important rules:
   // popclip.showText(processingText);
 
   // Build request configuration based on provider
-  const apiConfig = buildApiConfig(provider, apiKey, model, systemPrompt, text);
+  // Convert temperature from string to number
+  const tempValue = options.temperature ? parseFloat(options.temperature) : 0.3;
+  const apiConfig = buildApiConfig(provider, apiKey, model, systemPrompt, text, tempValue);
 
   try {
     // Create cancel token for request
@@ -430,40 +444,36 @@ Important rules:
   }
 };
 
-// Simple provider configuration
-interface ProviderConfig {
-  getApiKey: (options: Options) => string;
-  getModel: (options: Options) => string;
+// Helper functions to extract provider and model from combined model string
+function getProviderFromModel(modelString: string): string {
+  const parts = modelString.split(":");
+  return parts[0] || "";
 }
 
-const providerConfigs: Record<string, ProviderConfig> = {
-  "openai": {
-    getApiKey: (options) => options.openaiApiKey,
-    getModel: (options) => options.openaiModel
-  },
-  "anthropic": {
-    getApiKey: (options) => options.anthropicApiKey,
-    getModel: (options) => options.anthropicModel
-  },
-  "grok": {
-    getApiKey: (options) => options.grokApiKey,
-    getModel: (options) => options.grokModel
-  },
-  "gemini": {
-    getApiKey: (options) => options.geminiApiKey,
-    getModel: (options) => options.geminiModel
-  }
-};
+function getModelNameFromModel(modelString: string): string {
+  const parts = modelString.split(":");
+  return parts.length > 1 ? parts[1] : "";
+}
 
 // Helper functions
 function getApiKey(options: Options): string {
-  const provider = options.provider;
-  return providerConfigs[provider]?.getApiKey(options) || "";
+  const provider = getProviderFromModel(options.model);
+  switch (provider) {
+    case "openai":
+      return options.openaiApiKey;
+    case "anthropic":
+      return options.anthropicApiKey;
+    case "grok":
+      return options.grokApiKey;
+    case "gemini":
+      return options.geminiApiKey;
+    default:
+      return "";
+  }
 }
 
 function getModelForProvider(options: Options): string {
-  const provider = options.provider;
-  return providerConfigs[provider]?.getModel(options) || "";
+  return getModelNameFromModel(options.model);
 }
 
 function buildApiConfig(
@@ -471,8 +481,12 @@ function buildApiConfig(
   apiKey: string, 
   model: string, 
   systemPrompt: string, 
-  text: string
+  text: string,
+  temperature: number
 ): ApiConfig {
+  // Convert temperature from string to number or use default if invalid
+  const tempValue = isNaN(temperature) ? 0.3 : temperature;
+  
   switch (provider) {
     case "grok":
       return {
@@ -487,7 +501,7 @@ function buildApiConfig(
             { role: "system", content: systemPrompt },
             { role: "user", content: text }
           ],
-          temperature: 0.3,
+          temperature: tempValue,
           max_tokens: 4096
         },
         extractContent: (data: GrokResponseData) => data.choices[0].message.content.trim()
@@ -507,7 +521,7 @@ function buildApiConfig(
           messages: [
             { role: "user", content: text }
           ],
-          temperature: 0.3,
+          temperature: tempValue,
           max_tokens: 4096
         },
         extractContent: (data: AnthropicResponseData) => data.content[0].text.trim()
@@ -528,7 +542,7 @@ function buildApiConfig(
             }
           ],
           generationConfig: {
-            temperature: 0.3,
+            temperature: tempValue,
             maxOutputTokens: 4096
           }
         },
@@ -564,7 +578,7 @@ function buildApiConfig(
             { role: "system", content: systemPrompt },
             { role: "user", content: text }
           ],
-          temperature: 0.3,
+          temperature: tempValue,
           max_tokens: 4096
         },
         extractContent: (data: OpenAIResponseData) => data.choices[0].message.content.trim()
@@ -682,5 +696,12 @@ export const actions: Action<Options>[] = [
     requirements: ["text", "option-splitMode=1"],
     code: (input, options) =>
       processText(input, { ...options, taskType: "reply" }),
+  },
+  {
+    title: "Rewrite",
+    icon: "symbol:pencil.line",
+    requirements: ["text", "option-splitMode=1"],
+    code: (input, options) =>
+      processText(input, { ...options, taskType: "rewrite" }),
   },
 ];
