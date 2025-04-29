@@ -8,7 +8,7 @@
 // app: { name: InstantLingua, link: 'https://github.com/laurensent/InstantLingua' }
 // keywords: translate, grammar, reply
 // entitlements: [network]
-// ver: 0.7.0
+// ver: 0.8.0
 
 import axios from "axios";
 
@@ -92,6 +92,14 @@ export const options = [
     type: "boolean",
     defaultValue: false,
     description: "Use separate buttons for tasks or one for all"
+  },
+  {
+    identifier: "temperature",
+    label: "Temperature",
+    type: "string",
+    defaultValue: "0.3",
+    description: "Higher values make output more random, lower more deterministic (0-1)",
+    optional: true
   },
   {
     identifier: "taskType",
@@ -376,7 +384,9 @@ Important rules:
   // popclip.showText(processingText);
 
   // Build request configuration based on provider
-  const apiConfig = buildApiConfig(provider, apiKey, model, systemPrompt, text);
+  // Convert temperature from string to number
+  const tempValue = options.temperature ? parseFloat(options.temperature) : 0.3;
+  const apiConfig = buildApiConfig(provider, apiKey, model, systemPrompt, text, tempValue);
 
   try {
     // Create cancel token for request
@@ -471,8 +481,12 @@ function buildApiConfig(
   apiKey: string, 
   model: string, 
   systemPrompt: string, 
-  text: string
+  text: string,
+  temperature: number
 ): ApiConfig {
+  // Convert temperature from string to number or use default if invalid
+  const tempValue = isNaN(temperature) ? 0.3 : temperature;
+  
   switch (provider) {
     case "grok":
       return {
@@ -487,7 +501,7 @@ function buildApiConfig(
             { role: "system", content: systemPrompt },
             { role: "user", content: text }
           ],
-          temperature: 0.3,
+          temperature: tempValue,
           max_tokens: 4096
         },
         extractContent: (data: GrokResponseData) => data.choices[0].message.content.trim()
@@ -507,7 +521,7 @@ function buildApiConfig(
           messages: [
             { role: "user", content: text }
           ],
-          temperature: 0.3,
+          temperature: tempValue,
           max_tokens: 4096
         },
         extractContent: (data: AnthropicResponseData) => data.content[0].text.trim()
@@ -528,7 +542,7 @@ function buildApiConfig(
             }
           ],
           generationConfig: {
-            temperature: 0.3,
+            temperature: tempValue,
             maxOutputTokens: 4096
           }
         },
@@ -564,7 +578,7 @@ function buildApiConfig(
             { role: "system", content: systemPrompt },
             { role: "user", content: text }
           ],
-          temperature: 0.3,
+          temperature: tempValue,
           max_tokens: 4096
         },
         extractContent: (data: OpenAIResponseData) => data.choices[0].message.content.trim()
