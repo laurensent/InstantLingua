@@ -6,7 +6,7 @@
 // popclipVersion: 4508
 // description: LLM-Powered PopClip Extension for Translation & Writing
 // app: { name: InstantLingua, link: 'https://github.com/laurensent/InstantLingua' }
-// keywords: translate, grammar, reply
+// keywords: translate, grammar, reply and rewrite
 // entitlements: [network]
 // ver: 0.8.0
 
@@ -345,7 +345,7 @@ Important rules:
       case "paraphrase":
         styleInstruction = "Paraphrase the text using different wording while preserving the original meaning.";
         break;
-      case "shorten
+      case "shorten":
         styleInstruction = "Shorten the text while preserving the essential meaning and key points.";
         break;
       case "descriptive":
