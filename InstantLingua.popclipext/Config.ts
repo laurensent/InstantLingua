@@ -83,8 +83,8 @@ export const options = [
     label: "Task",
     type: "multiple",
     defaultValue: "translate",
-    values: ["translate", "grammar", "reply"],
-    valueLabels: ["Translate", "Grammar Check", "Reply Suggestions"],
+    values: ["translate", "grammar", "reply", "rewrite"],
+    valueLabels: ["Translate", "Grammar Check", "Reply Suggestions", "Rewrite"],
     description: "Select action to perform on text"
   },
   {
@@ -114,6 +114,16 @@ export const options = [
       "Swedish"
     ],
     dependsOn: { taskType: "translate" },
+  },
+  {
+    identifier: "rewriteStyle",
+    label: "Rewrite Style",
+    type: "multiple",
+    defaultValue: "improve",
+    values: ["improve", "paraphrase", "shorten", "descriptive", "simplify", "informative", "fluent", "professional"],
+    valueLabels: ["Improve", "Paraphrase", "Shorten", "More Descriptive", "Simplify", "Informative", "More Fluent", "Professional"],
+    description: "Select style for text rewriting",
+    dependsOn: { taskType: "rewrite" }
   },
   {
     identifier: "displayMode",
@@ -323,6 +333,51 @@ Important rules:
   case "reply":
     systemPrompt = `You are an expert communication assistant. The text provided is a message someone has sent to the user. Draft an extremely concise, clear reply that addresses the key points effectively. Keep the response brief and to-the-point while maintaining professionalism. Use no more than 2-3 short sentences when possible. Return only the ready-to-send reply with no explanations or comments.`;
     processingText = "Drafting reply...";
+    break;
+  case "rewrite":
+    const rewriteStyle = options.rewriteStyle;
+    let styleInstruction = "";
+    
+    switch (rewriteStyle) {
+      case "improve":
+        styleInstruction = "Improve the text while maintaining its meaning. Focus on clarity, correctness, and readability.";
+        break;
+      case "paraphrase":
+        styleInstruction = "Paraphrase the text using different wording while preserving the original meaning.";
+        break;
+      case "shorten
+        styleInstruction = "Shorten the text while preserving the essential meaning and key points.";
+        break;
+      case "descriptive":
+        styleInstruction = "Make the text more descriptive with additional details and vivid language while maintaining the core message.";
+        break;
+      case "simplify":
+        styleInstruction = "Simplify the text to make it easier to understand. Use simpler vocabulary and sentence structures.";
+        break;
+      case "informative":
+        styleInstruction = "Make the text more informative by adding clarity and relevant context while keeping it concise.";
+        break;
+      case "fluent":
+        styleInstruction = "Make the text sound more natural and fluent, focusing on improved flow and readability.";
+        break;
+      case "professional":
+        styleInstruction = "Make the text sound more professional with formal language and clear, structured phrasing.";
+        break;
+      default:
+        styleInstruction = "Improve the text while maintaining its meaning.";
+    }
+    
+    systemPrompt = `You are an expert writing assistant. Your ONLY task is to rewrite the provided text according to the following style instruction. ${styleInstruction}
+
+Important rules:
+1. Understand the meaning of the text but don't over-interpret
+2. Precisely follow the style instruction
+3. Maintain the original facts and information
+4. ONLY return the rewritten text with no explanations or comments
+5. Preserve paragraph formatting and technical terms
+6. Keep all names, abbreviations, and specialized terminology intact
+7. If the text is perfect for the requested style, you may return it with minimal changes`;
+    processingText = `Rewriting text (${rewriteStyle})...`;
     break;
   default:
     popclip.showText(`Invalid task type: ${taskType}`);
@@ -641,5 +696,12 @@ export const actions: Action<Options>[] = [
     requirements: ["text", "option-splitMode=1"],
     code: (input, options) =>
       processText(input, { ...options, taskType: "reply" }),
+  },
+  {
+    title: "Rewrite",
+    icon: "symbol:pencil.line",
+    requirements: ["text", "option-splitMode=1"],
+    code: (input, options) =>
+      processText(input, { ...options, taskType: "rewrite" }),
   },
 ];

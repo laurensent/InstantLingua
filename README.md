@@ -4,15 +4,28 @@
 
 Inspired by the official [Instant Translate](https://www.popclip.app/extensions/x/08hhdb) and [OpenAI Chat](https://www.popclip.app/extensions/x/48f32j) extensions, **InstantLingua** is a powerful PopClip extension that provides seamless language assistance.  
 
-With built-in support for **OpenAI, Claude, Grok, and Gemini**, InstantLingua enables instant translation, grammar correction, and smart reply suggestions—all directly within PopClip.  
+With built-in support for **OpenAI, Claude, Grok, and Gemini**, InstantLingua enables instant translation, grammar correction, text rewriting, and smart reply suggestions—all directly within PopClip.  
 
 ## Features
 
 - **Instant Translation** – Quickly translate selected text between multiple languages  
 - **Grammar Check** – Improve your writing with AI-powered grammar corrections (English Only)  
 - **Reply Suggestions** – Generate intelligent reply recommendations for messages and emails (English Only)
+- **Text Rewrite** – Rewrite your text in different styles like professional, concise, or more descriptive
 - **Multi-Provider Support** – Use OpenAI, Claude, Grok, or Gemini models for language tasks  
-- **Split Mode** – Choose between unified menu or separate buttons for each language task (translation/grammar/reply)
+- **Split Mode** – Choose between unified menu or separate buttons for each language task
+
+## Rewrite Styles
+InstantLingua offers several rewrite styles to enhance your text:
+
+- **Improve** – General improvements to clarity and readability
+- **Paraphrase** – Rephrase using different wording while preserving meaning
+- **Shorten** – Condense text while maintaining key points
+- **More Descriptive** – Add details and vivid language
+- **Simplify** – Make text easier to understand with simpler vocabulary
+- **Informative** – Add clarity and relevant context
+- **More Fluent** – Improve flow and natural language
+- **Professional** – Apply formal tone and structured phrasing
 
 ## Built-in Translation Languages  
 InstantLingua natively supports the following languages via API key, ensuring seamless translation across all AI providers:
@@ -74,7 +87,11 @@ InstantLingua enhances your PopClip experience with fast, AI-driven language too
 1. Open PopClip settings
 2. Find InstantLingua in your extensions
 3. Enter your API key for your preferred AI provider (OpenAI, Claude, Grok, or Gemini)
-4. Select your preferred task or default translation language when using the translator
+4. Select your preferred task type (translate, grammar check, reply suggestions, or rewrite)
+5. Configure task-specific options:
+   - For translation: select target language
+   - For rewrite: choose your preferred rewrite style
+6. Adjust display mode and temperature settings if needed
 
 ## License
 
