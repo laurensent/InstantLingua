@@ -12,76 +12,61 @@
 
 import axios from "axios";
 
-// Model configuration with labels
-const modelOptions = {
-  "openai": {
-    values: [
-      "gpt-4o-2024-08-06",
-      "gpt-4o-mini-2024-07-18",
-      "gpt-4.1-2025-04-14",
-      "gpt-4.1-mini-2025-04-14",
-      "gpt-4.1-nano-2025-04-14",
-      "o4-mini-2025-04-16"
-    ],
-    valueLabels: [
-      "GPT-4.1",
-      "GPT-4.1-mini",
-      "GPT-4.1-nano",
-      "o4-mini",
-      "GPT-4o",
-      "GPT-4o-mini"
-    ],
-    defaultModel: "gpt-4o-mini-2024-07-18"
-  },
-  "anthropic": {
-    values: [
-      "claude-3-7-sonnet-20250219",
-      "claude-3-5-sonnet-20240620", 
-      "claude-3-5-haiku-20241022"
-    ],
-    valueLabels: [
-      "Claude 3.7 Sonnet",
-      "Claude 3.5 Sonnet", 
-      "Claude 3.5 Haiku"
-    ],
-    defaultModel: "claude-3-5-sonnet-20240620"
-  },
-  "grok": {
-    values: [
-      "grok-2-1212",
-      "grok-3-mini-fast-beta",
-      "grok-3-mini-beta",
-      "grok-3-fast-beta",
-      "grok-3-beta"
-    ],
-    valueLabels: [
-      "Grok 3 Mini Fast Beta",
-      "Grok 3 Mini Beta",
-      "Grok 3 Fast Beta",
-      "Grok 3 Beta",
-      "Grok 2"
-    ],
-    defaultModel: "grok-3-beta"
-  },
-  "gemini": {
-    values: [
-      "gemini-2.0-flash", 
-      "gemini-2.0-flash-lite",
-      "gemini-1.5-flash",
-      "gemini-1.5-pro",
-      "gemini-2.5-flash-preview-04-17",
-      "gemini-2.5-pro-preview-03-25"
-    ],
-    valueLabels: [
-      "Gemini 2.5 Flash Preview",
-      "Gemini 2.5 Pro Preview",
-      "Gemini 2.0 Flash", 
-      "Gemini 2.0 Flash-Lite",
-      "Gemini 1.5 Flash",
-      "Gemini 1.5 Pro"
-    ],
-    defaultModel: "gemini-2.5-flash-preview-04-17"
-  }
+// Model configuration with provider prefixes
+const allModels = {
+  values: [
+    // OpenAI models
+    "openai:gpt-4o-2024-08-06",
+    "openai:gpt-4o-mini-2024-07-18",
+    "openai:gpt-4.1-2025-04-14",
+    "openai:gpt-4.1-mini-2025-04-14", 
+    "openai:gpt-4.1-nano-2025-04-14",
+    "openai:o4-mini-2025-04-16",
+    // Anthropic models
+    "anthropic:claude-3-7-sonnet-20250219",
+    "anthropic:claude-3-5-sonnet-20240620",
+    "anthropic:claude-3-5-haiku-20241022",
+    // Grok models
+    "grok:grok-3-beta",
+    "grok:grok-3-fast-beta",
+    "grok:grok-3-mini-beta",
+    "grok:grok-3-mini-fast-beta",
+    "grok:grok-2-1212",
+    // Gemini models
+    "gemini:gemini-2.5-flash-preview-04-17",
+    "gemini:gemini-2.5-pro-preview-03-25",
+    "gemini:gemini-2.0-flash",
+    "gemini:gemini-2.0-flash-lite",
+    "gemini:gemini-1.5-flash",
+    "gemini:gemini-1.5-pro"
+  ],
+  valueLabels: [
+    // OpenAI models
+    "GPT-4o",
+    "GPT-4o mini",
+    "GPT-4.1",
+    "GPT-4.1 mini",
+    "GPT-4.1 nano",
+    "o4 mini",
+    // Anthropic models
+    "Claude 3.7 Sonnet",
+    "Claude 3.5 Sonnet",
+    "Claude 3.5 Haiku",
+    // Grok models
+    "Grok 3 Beta",
+    "Grok 3 Fast Beta",
+    "Grok 3 Mini Beta",
+    "Grok 3 Mini Fast Beta",
+    "Grok 2",
+    // Gemini models
+    "Gemini 2.5 Flash Preview",
+    "Gemini 2.5 Pro Preview",
+    "Gemini 2.0 Flash",
+    "Gemini 2.0 Flash-Lite",
+    "Gemini 1.5 Flash",
+    "Gemini 1.5 Pro"
+  ],
+  defaultValue: "grok-3-beta"
 };
 
 // Static options configuration
@@ -94,14 +79,6 @@ export const options = [
     description: "Use separate buttons for tasks or one for all"
   },
   {
-    identifier: "temperature",
-    label: "Temperature",
-    type: "string",
-    defaultValue: "0.3",
-    description: "Higher values make output more random, lower more deterministic (0-1)",
-    optional: true
-  },
-  {
     identifier: "taskType",
     label: "Task",
     type: "multiple",
@@ -109,86 +86,6 @@ export const options = [
     values: ["translate", "grammar", "reply"],
     valueLabels: ["Translate", "Grammar Check", "Reply Suggestions"],
     description: "Select action to perform on text"
-  },
-  {
-    identifier: "displayMode",
-    label: "Display Mode",
-    type: "multiple",
-    values: ["display", "displayAndCopy"],
-    valueLabels: ["Display Only", "Display and Copy"],
-    defaultValue: "display"
-  },
-  {
-    identifier: "provider",
-    label: "AI Provider",
-    type: "multiple",
-    defaultValue: "grok",
-    values: ["openai", "anthropic", "grok", "gemini"],
-    valueLabels: ["OpenAI", "Claude (Anthropic)", "Grok (xAI)", "Gemini (Google)"]
-  },
-  {
-    identifier: "openaiApiKey",
-    label: "OpenAI API Key",
-    type: "secret",
-    description: "Get API Key from OpenAI: https://platform.openai.com",
-    dependsOn: { provider: "openai" }
-  },
-  {
-    identifier: "anthropicApiKey",
-    label: "Anthropic API Key",
-    type: "secret",
-    description: "Get API Key from Anthropic: https://console.anthropic.com",
-    dependsOn: { provider: "anthropic" }
-  },
-  {
-    identifier: "grokApiKey",
-    label: "Grok API Key",
-    type: "secret",
-    description: "Get API Key from xAI: https://x.ai",
-    dependsOn: { provider: "grok" }
-  },
-  {
-    identifier: "geminiApiKey",
-    label: "Gemini API Key", 
-    type: "secret",
-    description: "Get API Key from Google AI Studio: https://aistudio.google.com",
-    dependsOn: { provider: "gemini" }
-  },
-  {
-    identifier: "grokModel",
-    label: "xAI",
-    type: "multiple",
-    defaultValue: modelOptions.grok.defaultModel,
-    values: modelOptions.grok.values,
-    valueLabels: modelOptions.grok.valueLabels,
-    dependsOn: { provider: "grok" },
-  },
-  {
-    identifier: "anthropicModel",
-    label: "Anthropic",
-    type: "multiple",
-    defaultValue: modelOptions.anthropic.defaultModel,
-    values: modelOptions.anthropic.values,
-    valueLabels: modelOptions.anthropic.valueLabels,
-    dependsOn: { provider: "anthropic" },
-  },
-  {
-    identifier: "geminiModel",
-    label: "Google AI",
-    type: "multiple",
-    defaultValue: modelOptions.gemini.defaultModel,
-    values: modelOptions.gemini.values,
-    valueLabels: modelOptions.gemini.valueLabels,
-    dependsOn: { provider: "gemini" },
-  },
-  {
-    identifier: "openaiModel",
-    label: "OpenAI",
-    type: "multiple",
-    defaultValue: modelOptions.openai.defaultModel,
-    values: modelOptions.openai.values,
-    valueLabels: modelOptions.openai.valueLabels,
-    dependsOn: { provider: "openai" },
   },
   {
     identifier: "targetLang",
@@ -217,6 +114,58 @@ export const options = [
       "Swedish"
     ],
     dependsOn: { taskType: "translate" },
+  },
+  {
+    identifier: "displayMode",
+    label: "Display Mode",
+    type: "multiple",
+    values: ["display", "displayAndCopy"],
+    valueLabels: ["Display Only", "Display and Copy"],
+    defaultValue: "display"
+  },
+  {
+    identifier: "model",
+    label: "Model",
+    type: "multiple",
+    defaultValue: allModels.defaultValue,
+    values: allModels.values,
+    valueLabels: allModels.valueLabels
+  },
+  {
+    identifier: "temperature",
+    label: "Temperature",
+    type: "string",
+    defaultValue: "0.3",
+    description: "Higher values make output more random, lower more deterministic (0-1)",
+    optional: true
+  },
+  {
+    identifier: "openaiApiKey",
+    label: "OpenAI API Key",
+    type: "secret",
+    description: "Get API Key from https://platform.openai.com",
+    dependsOn: { model: value => value.startsWith("openai:") }
+  },
+  {
+    identifier: "anthropicApiKey",
+    label: "Anthropic API Key",
+    type: "secret",
+    description: "Get API Key from https://console.anthropic.com",
+    dependsOn: { model: value => value.startsWith("anthropic:") }
+  },
+  {
+    identifier: "grokApiKey",
+    label: "Grok API Key",
+    type: "secret",
+    description: "Get API Key from https://x.ai",
+    dependsOn: { model: value => value.startsWith("grok:") }
+  },
+  {
+    identifier: "geminiApiKey",
+    label: "Gemini API Key", 
+    type: "secret",
+    description: "Get API Key from https://aistudio.google.com",
+    dependsOn: { model: value => value.startsWith("gemini:") }
   }
 ] as const;
 
@@ -282,8 +231,8 @@ const processText: ActionFunction<Options> = async (input, options) => {
     return;
   }
 
-  // Get the provider and check API key
-  const provider = options.provider;
+  // Get the provider from model selection and check API key
+  const provider = getProviderFromModel(options.model);
   const apiKey = getApiKey(options);
   
   if (!apiKey) {
@@ -440,40 +389,36 @@ Important rules:
   }
 };
 
-// Simple provider configuration
-interface ProviderConfig {
-  getApiKey: (options: Options) => string;
-  getModel: (options: Options) => string;
+// Helper functions to extract provider and model from combined model string
+function getProviderFromModel(modelString: string): string {
+  const parts = modelString.split(":");
+  return parts[0] || "";
 }
 
-const providerConfigs: Record<string, ProviderConfig> = {
-  "openai": {
-    getApiKey: (options) => options.openaiApiKey,
-    getModel: (options) => options.openaiModel
-  },
-  "anthropic": {
-    getApiKey: (options) => options.anthropicApiKey,
-    getModel: (options) => options.anthropicModel
-  },
-  "grok": {
-    getApiKey: (options) => options.grokApiKey,
-    getModel: (options) => options.grokModel
-  },
-  "gemini": {
-    getApiKey: (options) => options.geminiApiKey,
-    getModel: (options) => options.geminiModel
-  }
-};
+function getModelNameFromModel(modelString: string): string {
+  const parts = modelString.split(":");
+  return parts.length > 1 ? parts[1] : "";
+}
 
 // Helper functions
 function getApiKey(options: Options): string {
-  const provider = options.provider;
-  return providerConfigs[provider]?.getApiKey(options) || "";
+  const provider = getProviderFromModel(options.model);
+  switch (provider) {
+    case "openai":
+      return options.openaiApiKey;
+    case "anthropic":
+      return options.anthropicApiKey;
+    case "grok":
+      return options.grokApiKey;
+    case "gemini":
+      return options.geminiApiKey;
+    default:
+      return "";
+  }
 }
 
 function getModelForProvider(options: Options): string {
-  const provider = options.provider;
-  return providerConfigs[provider]?.getModel(options) || "";
+  return getModelNameFromModel(options.model);
 }
 
 function buildApiConfig(
