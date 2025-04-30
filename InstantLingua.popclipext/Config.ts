@@ -1,12 +1,11 @@
 // #popclip
+// identifier: com.laurensent.instantlingua.PopClipExtension
+// popclip version: 4508
 // name: InstantLingua
-// identifier: com.laurensent.popclip.extension.instant-lingua
 // #icon: symbol:guitars.fill
 // icon: symbol:brain.head.profile.fill
-// popclipVersion: 4508
-// description: LLM-Powered PopClip Extension for Translation & Writing
 // app: { name: InstantLingua, link: 'https://github.com/laurensent/InstantLingua' }
-// keywords: translate, grammar, reply and rewrite
+// description: LLM-Powered PopClip Extension for Translation & Writing
 // entitlements: [network]
 // ver: 0.8.0
 
@@ -262,13 +261,6 @@ const processText: ActionFunction<Options> = async (input, options) => {
   const taskType = options.taskType;
   let systemPrompt = "";
   let processingText = "";
-
-// Path: Config.ts
-// Author: Lauren Wong
-// Created Date: 2025-03-19
-// Description: Updates to InstantLingua PopClip Extension
-// Version: 0.5.3
-// Encoding: UTF-8
 
 // Updated switch case for task types with improved systemPrompts
 switch (taskType) {
