@@ -98,4 +98,4 @@ InstantLingua enhances your PopClip experience with fast, AI-driven language too
 
 ## License
 
-InstantLingua is available under the MIT License. See the LICENSE file for details.
+InstantLingua is available under the GPLv3 License. See the LICENSE file for details.
