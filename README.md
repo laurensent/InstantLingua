@@ -32,7 +32,7 @@ InstantLingua offers several rewrite styles to enhance your text:
 
 | Provider | Description | Model |
 |----------|------------|-------|
-| OpenAI | GPT-4.1 | gpt-4o-2024-08-06 |
+| OpenAI | *GPT-4.1 | gpt-4o-2024-08-06 |
 | | GPT-4.1-mini | gpt-4o-mini-2024-07-18 |
 | | GPT-4.1-nano | gpt-4.1-2025-04-14 |
 | | o4-mini | gpt-4.1-mini-2025-04-14 |
@@ -41,7 +41,7 @@ InstantLingua offers several rewrite styles to enhance your text:
 | Anthropic | Claude 3.7 Sonnet | claude-3-7-sonnet-20250219 |
 | | Claude 3.5 Sonnet | claude-3-5-sonnet-20240620 |
 | | Claude 3.5 Haiku | claude-3-5-haiku-20241022 |
-| xAI (Grok) | *Grok 3 Beta | grok-3-beta |
+| xAI (Grok) | Grok 3 Beta | grok-3-beta |
 | | Grok 3 Fast Beta | grok-3-fast-beta |
 | | Grok 3 Mini Beta | grok-3-mini-beta |
 | | Grok 3 Mini Fast Beta | grok-3-mini-fast-beta |

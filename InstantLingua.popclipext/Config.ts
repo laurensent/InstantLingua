@@ -7,7 +7,7 @@
 // app: { name: InstantLingua, link: 'https://github.com/laurensent/InstantLingua' }
 // description: LLM-Powered PopClip Extension for Translation & Writing
 // entitlements: [network]
-// ver: 0.8.0
+// ver: 0.8.1
 
 import axios from "axios";
 
@@ -15,12 +15,12 @@ import axios from "axios";
 const allModels = {
   values: [
     // OpenAI models
-    "openai:gpt-4o-2024-08-06",
-    "openai:gpt-4o-mini-2024-07-18",
     "openai:gpt-4.1-2025-04-14",
     "openai:gpt-4.1-mini-2025-04-14", 
     "openai:gpt-4.1-nano-2025-04-14",
     "openai:o4-mini-2025-04-16",
+    "openai:gpt-4o-2024-08-06",
+    "openai:gpt-4o-mini-2024-07-18",
     // Anthropic models
     "anthropic:claude-3-7-sonnet-20250219",
     "anthropic:claude-3-5-sonnet-20240620",
@@ -41,12 +41,12 @@ const allModels = {
   ],
   valueLabels: [
     // OpenAI models
-    "GPT-4o",
-    "GPT-4o mini",
     "GPT-4.1",
     "GPT-4.1 mini",
     "GPT-4.1 nano",
-    "o4 mini",
+    "o4-mini",
+    "GPT-4o",
+    "GPT-4o mini",
     // Anthropic models
     "Claude 3.7 Sonnet",
     "Claude 3.5 Sonnet",
@@ -65,7 +65,7 @@ const allModels = {
     "Gemini 1.5 Flash",
     "Gemini 1.5 Pro"
   ],
-  defaultValue: "grok-3-beta"
+  defaultValue: "openai:gpt-4.1-2025-04-14"
 };
 
 // Static options configuration
@@ -245,7 +245,26 @@ const processText: ActionFunction<Options> = async (input, options) => {
   const apiKey = getApiKey(options);
   
   if (!apiKey) {
-    popclip.showText(`Please set ${provider.charAt(0).toUpperCase() + provider.slice(1)} API Key in extension settings`);
+    // Use proper provider name with correct capitalization
+    let providerName = "";
+    switch (provider) {
+      case "openai":
+        providerName = "OpenAI";
+        break;
+      case "anthropic":
+        providerName = "Anthropic";
+        break;
+      case "grok":
+        providerName = "Grok";
+        break;
+      case "gemini":
+        providerName = "Gemini";
+        break;
+      default:
+        providerName = provider.charAt(0).toUpperCase() + provider.slice(1);
+    }
+    
+    popclip.showText(`Please set ${providerName} API Key in extension settings`);
     return;
   }
 
