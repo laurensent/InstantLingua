@@ -96,6 +96,18 @@ InstantLingua enhances your PopClip experience with fast, AI-driven language too
    - For rewrite: choose your preferred rewrite style
 6. Adjust display mode and temperature settings if needed
 
+## Privacy
+
+InstantLingua takes your privacy seriously:
+
+- **No Data Storage**: InstantLingua does not store or collect your API keys. Your API keys are securely saved locally in PopClip's settings and are only used to authenticate with the respective AI service providers.
+- **No Usage Tracking**: The extension does not collect any data about how you use it or what text you process.
+- **Direct API Communication**: Your selected text is sent directly to the AI provider's API (OpenAI, Claude, Grok, or Gemini) using your own API key.
+- **Local Processing**: All operations occur locally on your device before and after API calls.
+- **Transparent Code**: The extension's source code is open and available for review.
+
+We respect your privacy and are committed to maintaining the security and confidentiality of your data.
+
 ## License
 
 InstantLingua is available under the GPLv3 License. See the LICENSE file for details.
