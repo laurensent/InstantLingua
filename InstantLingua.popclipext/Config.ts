@@ -217,6 +217,10 @@ interface ApiConfig {
 // Function to detect if text is Chinese
 function isChinese(text: string): boolean {
   // Check if text contains Chinese characters
+  const hasJapaneseChars = /[\u3040-\u309f\u30a0-\u30ff]/.test(text);
+  if (hasJapaneseChars) {
+    return false;
+  }
   return /[\u4e00-\u9fff]/.test(text);
 }
 
