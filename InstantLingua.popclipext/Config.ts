@@ -7,7 +7,7 @@
 // app: { name: InstantLingua, link: 'https://github.com/laurensent/InstantLingua' }
 // description: LLM-Powered PopClip Extension for Translation & Writing
 // entitlements: [network]
-// ver: 0.9
+// ver: 0.9.1
 
 import axios from "axios";
 
@@ -64,22 +64,53 @@ const allModels = {
 
 // Static options configuration
 export const options = [
+  // Task Toggles
   {
-    identifier: "splitMode",
-    label: "Split Mode",
-    type: "boolean",
-    defaultValue: false,
-    description: "Use separate buttons for tasks or one for all"
+    identifier: "taskToggleHeading",
+    type: "heading",
+    label: "Tasks"
   },
-  // Task Settings
   {
-    identifier: "taskType",
-    label: "Task",
-    type: "multiple",
-    defaultValue: "translate",
-    values: ["translate", "grammar", "reply", "rewrite", "summarize", "custom"],
-    valueLabels: ["Translate", "Grammar Check", "Reply Suggestions", "Rewrite", "Summarize", "Custom Prompt"],
-    description: "Select action to perform on text"
+    identifier: "enableTranslate",
+    label: "Translation",
+    type: "boolean",
+    icon: "symbol:translate",
+    defaultValue: true
+  },
+  {
+    identifier: "enableGrammar",
+    label: "Grammar Check",
+    type: "boolean",
+    icon: "symbol:text.badge.checkmark",
+    defaultValue: true
+  },
+  {
+    identifier: "enableReply",
+    label: "Reply Suggestions",
+    type: "boolean",
+    icon: "symbol:lightbulb.fill",
+    defaultValue: true
+  },
+  {
+    identifier: "enableRewrite",
+    label: "Rewrite",
+    type: "boolean",
+    icon: "symbol:pencil.line",
+    defaultValue: true
+  },
+  {
+    identifier: "enableSummarize",
+    label: "Summary",
+    type: "boolean",
+    icon: "symbol:list.bullet",
+    defaultValue: true
+  },
+  {
+    identifier: "enableCustom",
+    label: "Custom Prompt",
+    type: "boolean",
+    icon: "symbol:sparkles",
+    defaultValue: true
   },
   {
     identifier: "targetLang",
@@ -106,17 +137,16 @@ export const options = [
       "Polish",
       "Thai",
       "Swedish"
-    ],
-    dependsOn: { taskType: "translate" },
+    ]
   },
   {
     identifier: "bilingualMode",
     label: "Bilingual Comparison",
     type: "boolean",
     defaultValue: false,
-    description: "Show original text alongside translation",
-    dependsOn: { taskType: "translate" }
+    description: "Show original text alongside translation"
   },
+  // Rewrite Settings
   {
     identifier: "rewriteStyle",
     label: "Rewrite Style",
@@ -124,20 +154,12 @@ export const options = [
     defaultValue: "improve",
     values: ["improve", "paraphrase", "shorten", "descriptive", "simplify", "informative", "fluent", "professional"],
     valueLabels: ["Improve", "Paraphrase", "Shorten", "More Descriptive", "Simplify", "Informative", "More Fluent", "Professional"],
-    description: "Select style for text rewriting",
-    dependsOn: { taskType: "rewrite" }
+    description: "Select style for text rewriting"
   },
-  {
-    identifier: "customPrompt",
-    label: "Custom Prompt",
-    type: "string",
-    description: "Enter your custom instruction for the AI",
-    dependsOn: { taskType: "custom" }
-  },
-  // Display Settings
+  // Output Settings
   {
     identifier: "displayMode",
-    label: "Display Mode",
+    label: "Output Mode",
     type: "multiple",
     values: ["display", "displayAndCopy", "paste"],
     valueLabels: ["Display Only", "Display and Copy", "Paste to Cursor"],
@@ -159,6 +181,12 @@ export const options = [
     defaultValue: "0.3",
     description: "Higher values make output more random, lower more deterministic (0-1)",
     optional: true
+  },
+  {
+    identifier: "customPrompt",
+    label: "Custom Prompt",
+    type: "string",
+    description: "Enter your custom instruction for the AI"
   },
   {
     identifier: "openaiApiKey",
@@ -832,50 +860,44 @@ export function getErrorInfo(error: unknown): string {
 // Export actions
 export const actions: Action<Options>[] = [
   {
-    title: "InstantLingua",
-    icon: "symbol:brain.head.profile.fill",
-    requirements: ["text", "option-splitMode=0"],
-    code: processText,
-  },
-  {
-    title: "Translate",
+    title: "Translation",
     icon: "symbol:translate",
-    requirements: ["text", "option-splitMode=1"],
+    requirements: ["text", "option-enableTranslate=1"],
     code: (input, options) =>
       processText(input, { ...options, taskType: "translate" }),
   },
   {
     title: "Grammar Check",
     icon: "symbol:text.badge.checkmark",
-    requirements: ["text", "option-splitMode=1"],
+    requirements: ["text", "option-enableGrammar=1"],
     code: (input, options) =>
       processText(input, { ...options, taskType: "grammar" }),
   },
   {
     title: "Reply Suggestions",
     icon: "symbol:lightbulb.fill",
-    requirements: ["text", "option-splitMode=1"],
+    requirements: ["text", "option-enableReply=1"],
     code: (input, options) =>
       processText(input, { ...options, taskType: "reply" }),
   },
   {
     title: "Rewrite",
     icon: "symbol:pencil.line",
-    requirements: ["text", "option-splitMode=1"],
+    requirements: ["text", "option-enableRewrite=1"],
     code: (input, options) =>
       processText(input, { ...options, taskType: "rewrite" }),
   },
   {
-    title: "Summarize",
-    icon: "symbol:text.alignleft",
-    requirements: ["text", "option-splitMode=1"],
+    title: "Summary",
+    icon: "symbol:list.bullet",
+    requirements: ["text", "option-enableSummarize=1"],
     code: (input, options) =>
       processText(input, { ...options, taskType: "summarize" }),
   },
   {
     title: "Custom Prompt",
     icon: "symbol:sparkles",
-    requirements: ["text", "option-splitMode=1"],
+    requirements: ["text", "option-enableCustom=1"],
     code: (input, options) =>
       processText(input, { ...options, taskType: "custom" }),
   },
