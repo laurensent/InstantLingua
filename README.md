@@ -36,8 +36,11 @@ InstantLingua offers several rewrite styles to enhance your text:
 
 | Provider | Description | Model |
 |----------|------------|-------|
-| OpenAI | GPT-5.1 | gpt-5.1-2025-11-13 |
-| | *GPT-5 mini | gpt-5-mini-2025-08-07 |
+| OpenAI | *GPT-4.1 | gpt-4.1-2025-04-14 |
+| | GPT-4.1 mini | gpt-4.1-mini-2025-04-14 |
+| | GPT-4.1 nano | gpt-4.1-nano-2025-04-14 |
+| | GPT-5.1 | gpt-5.1-2025-11-13 |
+| | GPT-5 mini | gpt-5-mini-2025-08-07 |
 | | GPT-5 nano | gpt-5-nano-2025-08-07 |
 | Anthropic | Claude Sonnet 4.5 | claude-sonnet-4-5-20250929 |
 | | Claude Haiku 4.5 | claude-haiku-4-5-20251001 |
@@ -50,7 +53,7 @@ InstantLingua offers several rewrite styles to enhance your text:
 | | Gemini 2.5 Pro | gemini-2.5-pro |
 | Ollama | Local Models | Any installed model |
 
-*Note: Model marked with * indicates the recommended default model.
+*Note: Model marked with * indicates the default model.
 
 ## Translation Languages
 InstantLingua natively supports the following languages via API key, ensuring seamless translation across all AI providers:
