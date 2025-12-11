@@ -16,7 +16,6 @@ With built-in support for **OpenAI, Claude, Grok, Gemini, and Ollama (local)**, 
 - **Summarize** – Get concise summaries of long texts
 - **Custom Prompt** – Define your own AI instructions for custom text processing
 - **Multi-Provider Support** – Use OpenAI, Claude, Grok, Gemini, or Ollama (local) models for language tasks
-- **Split Mode** – Choose between unified menu or separate buttons for each language task
 - **Paste Mode** – Paste results directly to cursor position
 
 ## Rewrite Styles
@@ -55,27 +54,17 @@ InstantLingua offers several rewrite styles to enhance your text:
 
 *Note: Model marked with * indicates the default model.
 
-## Translation Languages
-InstantLingua natively supports the following languages via API key, ensuring seamless translation across all AI providers:
+## Language Support
 
-- English  
-- Chinese  
-- Spanish  
-- Arabic  
-- French  
-- Russian  
-- Portuguese  
-- German  
-- Japanese  
-- Hindi  
-- Korean  
-- Italian  
-- Dutch  
-- Turkish  
-- Vietnamese  
-- Polish  
-- Thai  
-- Swedish  
+InstantLingua supports 32 languages for translation. Language quality varies by provider:
+
+| Provider | Languages | Best For |
+|----------|-----------|----------|
+| OpenAI | 50+ | English, European, Asian languages |
+| Anthropic | 30+ | English, European, Chinese, Japanese, Korean |
+| Gemini | 100+ | Widest language coverage |
+| Grok | 20+ | Major languages |
+| Ollama | Varies | Depends on local model (e.g., Qwen for Chinese, Llama for English) |
 
 InstantLingua enhances your PopClip experience with fast, AI-driven language tools.
 
@@ -92,7 +81,7 @@ InstantLingua enhances your PopClip experience with fast, AI-driven language too
 3. Select your preferred model:
    - For cloud providers (OpenAI, Claude, Grok, Gemini): Enter your API key
    - For Ollama (local): Enter the model name (e.g., llama3.2, gpt-oss, mistral)
-4. Select your preferred task type (translate, grammar check, reply suggestions, rewrite, summarize, or custom prompt)
+4. Enable/disable tasks as needed (Translation, Grammar Check, Reply Suggestions, Rewrite, Summary, Custom Prompt)
 5. Configure task-specific options:
    - For translation: select target language and enable bilingual comparison if desired
    - For rewrite: choose your preferred rewrite style

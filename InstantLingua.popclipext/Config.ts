@@ -136,7 +136,21 @@ export const options = [
       "Vietnamese",
       "Polish",
       "Thai",
-      "Swedish"
+      "Swedish",
+      "Indonesian",
+      "Malay",
+      "Hebrew",
+      "Greek",
+      "Czech",
+      "Romanian",
+      "Hungarian",
+      "Finnish",
+      "Norwegian",
+      "Danish",
+      "Ukrainian",
+      "Bengali",
+      "Persian",
+      "Filipino"
     ]
   },
   {
