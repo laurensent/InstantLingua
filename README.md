@@ -18,6 +18,17 @@ With built-in support for **OpenAI, Claude, Grok, Gemini, and Ollama (local)**, 
 - **Multi-Provider Support** – Use OpenAI, Claude, Grok, Gemini, or Ollama (local) models for language tasks
 - **Paste Mode** – Paste results directly to cursor position
 
+## Tasks Overview
+
+| Task | Type | Description |
+|------|------|-------------|
+| Translation | Bilingual | Convert text to target language |
+| Grammar Check | Monolingual | Fix grammar and spelling errors |
+| Reply Suggestions | Monolingual | Generate replies to messages |
+| Rewrite | Monolingual | Rewrite text in different styles |
+| Summary | Monolingual | Condense long text |
+| Custom Prompt | Flexible | User-defined AI instructions |
+
 ## Rewrite Styles
 InstantLingua offers several rewrite styles to enhance your text:
 

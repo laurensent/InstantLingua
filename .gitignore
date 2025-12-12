@@ -1,0 +1,9 @@
+# Build artifacts
+*.popclipextz
+InstantLinguaDialog/InstantLingua Dialog.app/
+
+# macOS
+.DS_Store
+
+# Claude
+.claude/
