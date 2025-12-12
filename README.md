@@ -18,6 +18,11 @@ With built-in support for **OpenAI, Claude, Grok, Gemini, and Ollama (local)**, 
 - **Multi-Provider Support** – Use OpenAI, Claude, Grok, Gemini, or Ollama (local) models for language tasks
 - **Paste Mode** – Paste results directly to cursor position
 - **Dialog Window** – Display results in a floating panel for longer content
+  - Floating panel appears near cursor
+  - Bilingual view with language detection labels
+  - Text-to-speech for original and translation
+  - Quick copy buttons for each section
+  - Click outside or press `Esc` to close, `Return` to confirm, `Cmd+C` to copy translation
 
 ## Tasks Overview
 
