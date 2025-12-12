@@ -6,7 +6,14 @@ import NaturalLanguage
 class AppDelegate: NSObject, NSApplicationDelegate {
     var window: NSWindow?
     var eventMonitor: Any?
-    var handledURL = false
+    private var _handledURL = false
+    private var isTransitioning = false
+    private let lock = NSLock()
+
+    var handledURL: Bool {
+        get { lock.lock(); defer { lock.unlock() }; return _handledURL }
+        set { lock.lock(); defer { lock.unlock() }; _handledURL = newValue }
+    }
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         // Register URL handler early to catch URL events before applicationDidFinishLaunching
@@ -27,7 +34,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
-        return true
+        // Don't terminate if we're transitioning to a new window
+        return !isTransitioning
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -75,6 +83,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func showDialog(text: String? = nil) {
+        // Prevent app termination during window transition
+        isTransitioning = true
+        defer { isTransitioning = false }
+
         // Clean up previous event monitor
         if let monitor = eventMonitor {
             NSEvent.removeMonitor(monitor)
@@ -147,7 +159,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Position near mouse cursor
         let mouseLocation = NSEvent.mouseLocation
-        let screenFrame = NSScreen.main?.visibleFrame ?? .zero
+        guard let screen = NSScreen.main ?? NSScreen.screens.first else {
+            // Fallback: center on screen if no screen available
+            panel.center()
+            panel.makeKeyAndOrderFront(nil)
+            window = panel
+            NSApplication.shared.activate(ignoringOtherApps: true)
+            return
+        }
+        let screenFrame = screen.visibleFrame
         var windowX = mouseLocation.x - estimatedWidth / 2
 
         // Default: above mouse, fallback: below if near top edge
@@ -180,7 +200,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSApplication.shared.activate(ignoringOtherApps: true)
 
         // Keyboard shortcuts
-        eventMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+        eventMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard self != nil else { return event }
             // Escape to close
             if event.keyCode == 53 {
                 NSApplication.shared.terminate(nil)
@@ -231,18 +252,51 @@ func detectLanguage(_ text: String) -> String {
     return languageNames[language] ?? language.rawValue.capitalized
 }
 
+// MARK: - Speech Manager
+class SpeechManager: NSObject, ObservableObject, NSSpeechSynthesizerDelegate {
+    @Published var speakingOriginal = false
+    @Published var speakingTranslation = false
+
+    private let synthesizer = NSSpeechSynthesizer()
+
+    override init() {
+        super.init()
+        synthesizer.delegate = self
+    }
+
+    func speak(_ text: String, isOriginal: Bool) {
+        if synthesizer.isSpeaking {
+            synthesizer.stopSpeaking()
+            speakingOriginal = false
+            speakingTranslation = false
+            return
+        }
+
+        if isOriginal {
+            speakingOriginal = true
+        } else {
+            speakingTranslation = true
+        }
+        synthesizer.startSpeaking(text)
+    }
+
+    func speechSynthesizer(_ sender: NSSpeechSynthesizer, didFinishSpeaking finishedSpeaking: Bool) {
+        DispatchQueue.main.async { [weak self] in
+            self?.speakingOriginal = false
+            self?.speakingTranslation = false
+        }
+    }
+}
+
 // MARK: - Dialog View
 struct DialogView: View {
     let text: String
     let onClose: () -> Void
     @State private var copiedOriginal = false
     @State private var copiedTranslation = false
-    @State private var speakingOriginal = false
-    @State private var speakingTranslation = false
     @State private var showingHelp = false
+    @StateObject private var speechManager = SpeechManager()
     @Environment(\.colorScheme) private var colorScheme
-
-    private let synthesizer = NSSpeechSynthesizer()
 
     // Adaptive opacity based on color scheme
     private var originalCardOpacity: Double {
@@ -285,10 +339,10 @@ struct DialogView: View {
                                     .foregroundStyle(.secondary)
                                 Spacer()
                                 HStack(spacing: 12) {
-                                    Button(action: { speakText(parts.original) }) {
-                                        Image(systemName: speakingOriginal ? "stop.fill" : "speaker.wave.2")
+                                    Button(action: { speechManager.speak(parts.original, isOriginal: true) }) {
+                                        Image(systemName: speechManager.speakingOriginal ? "stop.fill" : "speaker.wave.2")
                                             .font(.system(size: 12))
-                                            .foregroundStyle(speakingOriginal ? .orange : .secondary)
+                                            .foregroundStyle(speechManager.speakingOriginal ? .orange : .secondary)
                                             .frame(width: 14, height: 14)
                                     }
                                     .buttonStyle(.plain)
@@ -321,10 +375,10 @@ struct DialogView: View {
                                     .foregroundStyle(.secondary)
                                 Spacer()
                                 HStack(spacing: 12) {
-                                    Button(action: { speakText(parts.translation) }) {
-                                        Image(systemName: speakingTranslation ? "stop.fill" : "speaker.wave.2")
+                                    Button(action: { speechManager.speak(parts.translation, isOriginal: false) }) {
+                                        Image(systemName: speechManager.speakingTranslation ? "stop.fill" : "speaker.wave.2")
                                             .font(.system(size: 12))
-                                            .foregroundStyle(speakingTranslation ? .orange : .secondary)
+                                            .foregroundStyle(speechManager.speakingTranslation ? .orange : .secondary)
                                             .frame(width: 14, height: 14)
                                     }
                                     .buttonStyle(.plain)
@@ -361,10 +415,10 @@ struct DialogView: View {
                                 .foregroundStyle(.secondary)
                             Spacer()
                             HStack(spacing: 12) {
-                                Button(action: { speakText(text) }) {
-                                    Image(systemName: speakingOriginal ? "stop.fill" : "speaker.wave.2")
+                                Button(action: { speechManager.speak(text, isOriginal: true) }) {
+                                    Image(systemName: speechManager.speakingOriginal ? "stop.fill" : "speaker.wave.2")
                                         .font(.system(size: 12))
-                                        .foregroundStyle(speakingOriginal ? .orange : .secondary)
+                                        .foregroundStyle(speechManager.speakingOriginal ? .orange : .secondary)
                                         .frame(width: 14, height: 14)
                                 }
                                 .buttonStyle(.plain)
@@ -465,44 +519,6 @@ struct DialogView: View {
             .padding(.vertical, 12)
         }
         .frame(minWidth: 360, minHeight: 160)
-    }
-
-    private func speakText(_ textToSpeak: String) {
-        // Determine if this is original or translation text
-        let isOriginal: Bool
-        if let parts = bilingualParts {
-            isOriginal = textToSpeak == parts.original
-        } else {
-            isOriginal = true  // Single text mode - always treat as original
-        }
-
-        // If already speaking this text, stop it
-        if synthesizer.isSpeaking {
-            synthesizer.stopSpeaking()
-            speakingOriginal = false
-            speakingTranslation = false
-            return  // Just stop, don't restart
-        }
-
-        // Start speaking
-        if isOriginal {
-            speakingOriginal = true
-        } else {
-            speakingTranslation = true
-        }
-
-        synthesizer.startSpeaking(textToSpeak)
-
-        // Monitor when speech finishes
-        DispatchQueue.global().async {
-            while synthesizer.isSpeaking {
-                Thread.sleep(forTimeInterval: 0.1)
-            }
-            DispatchQueue.main.async {
-                speakingOriginal = false
-                speakingTranslation = false
-            }
-        }
     }
 
     private func copyText(_ text: String, isTranslation: Bool = false) {
