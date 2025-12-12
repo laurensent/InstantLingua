@@ -17,6 +17,7 @@ With built-in support for **OpenAI, Claude, Grok, Gemini, and Ollama (local)**, 
 - **Custom Prompt** – Define your own AI instructions for custom text processing
 - **Multi-Provider Support** – Use OpenAI, Claude, Grok, Gemini, or Ollama (local) models for language tasks
 - **Paste Mode** – Paste results directly to cursor position
+- **Dialog Window** – Display results in a floating panel for longer content
 
 ## Tasks Overview
 
@@ -81,7 +82,9 @@ InstantLingua enhances your PopClip experience with fast, AI-driven language too
 
 ## Installation
 
-1. Download the latest release from the repository
+1. Download from [Releases](https://github.com/laurensent/InstantLingua/releases):
+   - **InstantLingua.popclipextz** – Standard version with preset models
+   - **InstantLingua-Dev.popclipextz** – Dev version with custom API endpoint and model ID support
 2. Double-click the .popclipextz file to install
 3. Configure your preferred AI provider API key in PopClip settings
 

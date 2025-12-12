@@ -1,6 +1,6 @@
 # Build artifacts
 *.popclipextz
-InstantLinguaDialog/InstantLingua Dialog.app/
+InstantLingua Dialog.app/
 
 # macOS
 .DS_Store
