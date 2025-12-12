@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g., v1.0)'
+        required: true
+      message:
+        description: 'Release message'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and Package
+        run: |
+          chmod +x release.sh
+          chmod +x InstantLinguaDialog/build.sh
+          ./release.sh all
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event.inputs.tag }}
+          name: ${{ github.event.inputs.tag }}
+          body: ${{ github.event.inputs.message }}
+          files: |
+            InstantLingua.popclipextz
+            InstantLingua-Dev.popclipextz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
