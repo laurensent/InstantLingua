@@ -28,6 +28,14 @@ jobs:
           chmod +x InstantLinguaDialog/build.sh
           ./release.sh all
 
+      - name: Delete Previous Releases
+        run: |
+          gh release list --json tagName -q '.[].tagName' | while read tag; do
+            gh release delete "$tag" --yes --cleanup-tag || true
+          done
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
