@@ -90,8 +90,10 @@ InstantLingua enhances your PopClip experience with fast, AI-driven language too
 1. Download from [Releases](https://github.com/laurensent/InstantLingua/releases):
    - **InstantLingua.popclipextz** – Standard version with preset models
    - **InstantLingua-Dev.popclipextz** – Dev version with custom API endpoint and model ID support
+   - **InstantLingua.command** / **InstantLingua-Dev.command** – Setup script for Dialog Window mode
 2. Double-click the .popclipextz file to install
 3. Configure your preferred AI provider API key in PopClip settings
+4. **(Optional) For Dialog Window mode**: Run the corresponding `.command` file to set up the Dialog app
 
 ## Setup
 
@@ -105,8 +107,19 @@ InstantLingua enhances your PopClip experience with fast, AI-driven language too
    - For translation: select target language and enable bilingual comparison if desired
    - For rewrite: choose your preferred rewrite style
    - For custom prompt: enter your custom AI instruction
-6. Choose display mode: Display Only, Display and Copy, or Paste to Cursor
+6. Choose display mode: Display Only, Display and Copy, Paste to Cursor, or Dialog Window
 7. Adjust temperature settings if needed
+
+### Dialog Window Setup
+
+To use the Dialog Window output mode:
+
+1. Install the PopClip extension first
+2. Run the `.command` file (InstantLingua.command or InstantLingua-Dev.command)
+   - This copies the Dialog app to `/Applications/` and registers the URL scheme
+   - If prompted by macOS Gatekeeper, go to Privacy & Security settings and click "Open Anyway"
+3. Select "Dialog Window" as the output mode in PopClip settings
+4. Now when you use any task, results will appear in a floating dialog window
 
 ### Ollama Setup
 

@@ -1,5 +1,6 @@
 # Build artifacts
 *.popclipextz
+*.command
 InstantLingua Dialog.app/
 
 # macOS
@@ -7,3 +8,6 @@ InstantLingua Dialog.app/
 
 # Claude
 .claude/
+
+# Project TODO (local only)
+TODO.md
